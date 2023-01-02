@@ -1,6 +1,6 @@
 #include <queue>
 
-#include "tag_no_location_observation.h"
+#include "tag_no_opp_observation.h"
 #include <despot/util/coord.h>
 #include <despot/util/floor.h>
 
@@ -12,7 +12,7 @@ namespace despot {
  * Tag class
  * =============================================================================*/
 
-TagNoObs::TagNoObs() {
+TagNoOppObs::TagNoOppObs() {
 	string map = string("mapSize = 5 10\n") + string("#####...##\n")
 		+ string("#####...##\n") + string("#####...##\n")
 		+ string("...........\n") + string("...........");
@@ -30,7 +30,7 @@ TagNoObs::TagNoObs() {
   robot_pos_unknown_ = false;
 }
 
-TagNoObs::TagNoObs(string params_file) :
+TagNoOppObs::TagNoOppObs(string params_file) :
 	BaseTag(params_file) {
 	same_loc_obs_ = floor_.NumCells();
 	obs_.resize(NumStates());
@@ -43,7 +43,7 @@ TagNoObs::TagNoObs(string params_file) :
   robot_pos_unknown_ = false;
 }
 
-bool TagNoObs::Step(State& state, double random_num, ACT_TYPE action, double& reward,
+bool TagNoOppObs::Step(State& state, double random_num, ACT_TYPE action, double& reward,
 	OBS_TYPE& obs) const {
 	bool terminal = BaseTag::Step(state, random_num, action, reward);
 
@@ -52,7 +52,7 @@ bool TagNoObs::Step(State& state, double random_num, ACT_TYPE action, double& re
 	return terminal;
 }
 
-OBS_TYPE TagNoObs::getObs(const State& s, ACT_TYPE action) const{
+OBS_TYPE TagNoOppObs::getObs(const State& s, ACT_TYPE action) const{
     if(action == 4){
         const TagState& state = static_cast<const TagState&>(s);
         int rob = rob_[state.state_id];
@@ -63,11 +63,11 @@ OBS_TYPE TagNoObs::getObs(const State& s, ACT_TYPE action) const{
 
 }
 
-double TagNoObs::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
+double TagNoOppObs::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
 	return obs == getObs(s, a);
 }
 
-Belief* TagNoObs::ExactPrior() const {
+Belief* TagNoOppObs::ExactPrior() const {
 	vector<State*> particles;
 	for (int rob = 0; rob < floor_.NumCells(); rob++) {
 		for (int opp = 0; opp < floor_.NumCells(); opp++) {
@@ -83,7 +83,7 @@ Belief* TagNoObs::ExactPrior() const {
 	return belief;
 }
 
-Belief* TagNoObs::ApproxPrior() const {
+Belief* TagNoOppObs::ApproxPrior() const {
 	vector<State*> particles;
 
 	int N = floor_.NumCells();
@@ -101,7 +101,7 @@ Belief* TagNoObs::ApproxPrior() const {
 	return belief;
 }
 
-Belief* TagNoObs::InitialBelief(const State* start, string type) const {
+Belief* TagNoOppObs::InitialBelief(const State* start, string type) const {
 	Belief* prior = NULL;
 	if (type == "EXACT") {
 		prior = ExactPrior();
@@ -115,7 +115,7 @@ Belief* TagNoObs::InitialBelief(const State* start, string type) const {
 	return prior;
 }
 
-void TagNoObs::Observe(const Belief* belief, ACT_TYPE action,  //TODO:related to AEMS - didnt change to no loaction observation
+void TagNoOppObs::Observe(const Belief* belief, ACT_TYPE action,  //TODO:related to AEMS - didnt change to no loaction observation
 	map<OBS_TYPE, double>& obss) const {
 	const vector<State*>& particles =
 		static_cast<const ParticleBelief*>(belief)->particles();
@@ -132,7 +132,7 @@ void TagNoObs::Observe(const Belief* belief, ACT_TYPE action,  //TODO:related to
 	}
 }
 
-void TagNoObs::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const {
+void TagNoOppObs::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const {
 	if (obs == floor_.NumCells()) {
 		out << "On opponent" << endl;
 	} else {

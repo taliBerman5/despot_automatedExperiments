@@ -1,5 +1,5 @@
 #include <despot/planner.h>
-#include "tag_no_location_observation.h"
+#include "tag_no_opp_observation.h"
 
 using namespace despot;
 
@@ -16,7 +16,7 @@ public:
 
   DSPOMDP* InitializeModel(option::Option* options) {
     DSPOMDP* model = !options[E_PARAMS_FILE] ?
-      new TagNoObs() : new TagNoObs(options[E_PARAMS_FILE].arg);
+      new TagNoOppObs() : new TagNoOppObs(options[E_PARAMS_FILE].arg);
     return model;
   }
 

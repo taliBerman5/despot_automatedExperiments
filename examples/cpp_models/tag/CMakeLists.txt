@@ -8,8 +8,7 @@ include_directories(
 add_executable("${PROJECT_NAME}_laser_tag"
   src/base/base_tag.cpp
   src/laser_tag/laser_tag.cpp
-  src/laser_tag/main.cpp
-  src/tag_no_location_observation/tag_no_location_observation.h)
+  src/laser_tag/main.cpp)
 target_link_libraries("${PROJECT_NAME}_laser_tag"
   "${PROJECT_NAME}"
 )
@@ -32,12 +31,12 @@ target_link_libraries("${PROJECT_NAME}_tag"
   "${PROJECT_NAME}"
 )
 
-add_executable("${PROJECT_NAME}_tag_no_location_observation"
+add_executable("${PROJECT_NAME}_tag_no_opp_observation"
         src/base/base_tag.cpp
-        src/tag_no_location_observation/tag_no_location_observation.cpp
-        src/tag_no_location_observation/main.cpp
+        src/tag_no_opp_observation/tag_no_opp_observation.cpp
+        src/tag_no_opp_observation/main.cpp
         )
-target_link_libraries("${PROJECT_NAME}_tag_no_location_observation"
+target_link_libraries("${PROJECT_NAME}_tag_no_opp_observation"
         "${PROJECT_NAME}"
         )
 
@@ -45,6 +44,6 @@ install(TARGETS
     "${PROJECT_NAME}_laser_tag"
     "${PROJECT_NAME}_noisy_laser_tag"
     "${PROJECT_NAME}_tag"
-    "${PROJECT_NAME}_tag_no_location_observation"
+    "${PROJECT_NAME}_tag_no_opp_observation"
   RUNTIME DESTINATION "${BINARY_INSTALL_PATH}"
 )

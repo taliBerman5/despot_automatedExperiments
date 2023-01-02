@@ -1,5 +1,5 @@
-#ifndef TAGNOOBS_H
-#define TAGNOOBS_H
+#ifndef TAGNOOPPOBS_H
+#define TAGNOOPPOBS_H
 
 #include <despot/interface/pomdp.h>
 #include <despot/core/mdp.h>
@@ -13,12 +13,12 @@ namespace despot {
  * Tag class
  * =============================================================================*/
 
-class TagNoObs: public BaseTag {
+class TagNoOppObs: public BaseTag {
 private:
   std::vector<OBS_TYPE> obs_;
 public:
-    TagNoObs();
-    TagNoObs(std::string params_file);
+    TagNoOppObs();
+    TagNoOppObs(std::string params_file);
 
 	bool Step(State& state, double random_num, ACT_TYPE action, double& reward,
 		OBS_TYPE& obs) const;
