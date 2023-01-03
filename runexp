@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+DIR="examples/cpp_models"   # Domain directory
+LOG=/dev/stdout             # Log file output
+REWIND=false
+
+while getopts 'd:l:r' OPTION; do
+	case $OPTION in
+	d)
+		DIR=$OPTARG
+		;;
+	r)
+		REWIND=true
+		;;
+	l)
+		LOG=$OPTARG
+		;;
+	
+    ?) 
+		echo "Usage: $(basename $0) [-d DIR] [-r] experiment command line ..."
+		;;
+	esac
+done
+
+shift $((OPTIND-1))
+
+if [ \! -e $LOG ]; then
+    # If the log file does not exist, initialize with a header
+	echo "model,depth,steps,runs,drmean,drstd,urmean,urstd,cputime" > $LOG
+fi
+
+$DIR/$@ | awk \
+'/^Model/ {model=$3}
+ /^Search depth/ {depth=$4}
+ /^Simulation steps/ {steps=$4}
+ /^Completed/ {runs=$2}
+ /^Average total discounted/ {drmean=$7; drstd=substr($8, 2, length($8)-2)}
+ /^Average total undiscounted/ {urmean=$7;  urstd=substr($8, 2, length($8)-2)}
+ /^Total time/ {cputime=substr($9, 1, length($9)-1)}
+ END {printf "%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+             model,depth,steps,runs,drmean,drstd,urmean,urstd,cputime}
+' >> $LOG
