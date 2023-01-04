@@ -180,7 +180,7 @@ file may look like
 
 More fields can be added if desired.
 
-
+```
 optional flags - 
 --runs <number>: number of rounds
 --solver <solver name>: determine the solver
@@ -190,3 +190,4 @@ optional flags -
 --check_default_policy : for pomcp, runs only rollouts. The constructed tree depth is 1. 
 
 more flags can be found in plannerbase.h under const option::Descriptor usage[]
+```
