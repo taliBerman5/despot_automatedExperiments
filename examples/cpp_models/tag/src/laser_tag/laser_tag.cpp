@@ -24,6 +24,10 @@ LaserTag::LaserTag() :
   robot_pos_unknown_ = false;
 }
 
+LaserTag::LaserTag(int unsuccessful_tag_reward): LaserTag(){
+    BaseTag::UNSUCCESSFUL_TAG_REWARD = unsuccessful_tag_reward;
+}
+
 LaserTag::LaserTag(string params_file) :
 	BaseTag(params_file),
 	noise_sigma_(2.5),

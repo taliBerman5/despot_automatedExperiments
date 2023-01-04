@@ -8,11 +8,14 @@ public:
   MyPlanner() {
   }
 
-  DSPOMDP* InitializeModel(option::Option* options) {
-    DSPOMDP* model = !options[E_PARAMS_FILE] ?
-      new NoisyLaserTag() : new NoisyLaserTag(options[E_PARAMS_FILE].arg);
+DSPOMDP* InitializeModel(option::Option* options) {
+    DSPOMDP* model = new NoisyLaserTag() ;
+    if (options[E_PARAMS_FILE])
+        model = new NoisyLaserTag(options[E_PARAMS_FILE].arg);
+    else if (options[E_UNSUCCESSFUL_REWARD])
+        model = new NoisyLaserTag(atoi(options[E_UNSUCCESSFUL_REWARD].arg));
     return model;
-  }
+}
 
   World* InitializeWorld(std::string&  world_type, DSPOMDP* model, option::Option* options)
   {

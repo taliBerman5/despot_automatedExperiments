@@ -20,6 +20,7 @@ private:
 
 public:
 	LaserTag();
+    LaserTag(int unsuccessful_tag_reward);
 	LaserTag(std::string params_file);
 	double LaserRange(const State& state, int dir) const;
 	void Init();

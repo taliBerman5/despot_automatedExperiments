@@ -20,6 +20,7 @@ private:
 
 public:
 	NoisyLaserTag();
+    NoisyLaserTag(int unsuccessful_tag_reward);
 	NoisyLaserTag(std::string params_file);
 	double LaserRange(const State& state, int dir) const;
 	void Init();

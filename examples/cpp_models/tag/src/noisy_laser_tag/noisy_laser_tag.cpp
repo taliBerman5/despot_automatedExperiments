@@ -24,6 +24,10 @@ NoisyLaserTag::NoisyLaserTag() :
   robot_pos_unknown_ = true; 
 }
 
+NoisyLaserTag::NoisyLaserTag(int unsuccessful_tag_reward): NoisyLaserTag(){
+    BaseTag::UNSUCCESSFUL_TAG_REWARD = unsuccessful_tag_reward;
+}
+
 NoisyLaserTag::NoisyLaserTag(string params_file) :
 	BaseTag(params_file),
 	noise_sigma_(2.5),
