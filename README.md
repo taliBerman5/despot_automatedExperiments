@@ -180,8 +180,10 @@ file may look like
 
 More fields can be added if desired.
 
-```
+
 optional flags - 
+
+```
 --runs <number>: number of rounds
 --solver <solver name>: determine the solver
 --depth <number>: search depth in simulate
@@ -189,5 +191,5 @@ optional flags -
 --leaf_heuristic <heuristic type>: default is rollout. options - rollout, sarsop, value_iteration
 --check_default_policy : for pomcp, runs only rollouts. The constructed tree depth is 1. 
 
-more flags can be found in plannerbase.h under const option::Descriptor usage[]
 ```
+more flags can be found in plannerbase.h under const option::Descriptor usage[]
