@@ -106,7 +106,7 @@ int Planner::RunEvaluation(int argc, char *argv[]) {
 	/* =========================
 	 * Display parameters
 	 * =========================*/
-	DisplayParameters(options, model);
+	DisplayParameters(options, model, solver_type);
 
 	/* =========================
 	 * run evaluation

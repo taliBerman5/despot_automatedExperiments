@@ -17,7 +17,9 @@ struct Config {
 	unsigned int root_seed;
 	std::string default_action;
 	double noise;
-	bool silence; // toggle logging
+	bool silence;// toggle logging
+    bool geometric_search_depth;
+    int geometric_probability;
 
 	Config() :
 		time_per_move(1),
@@ -31,7 +33,9 @@ struct Config {
 		root_seed(42),
 		default_action(""),
 		noise(0.1),
-		silence(false) {
+		silence(false),
+        geometric_search_depth(false),
+        geometric_probability(90){
 	}
 };
 

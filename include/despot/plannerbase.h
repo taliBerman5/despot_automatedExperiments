@@ -54,6 +54,7 @@ enum OptionIndex {
 	E_SERVER,
 	E_PORT,
 	E_LOG,
+    E_GEOMETRIC_SEARCH_DEPTH
 };
 
 option::Descriptor* BuildUsage(string lower_bounds_str,
@@ -123,6 +124,8 @@ const option::Descriptor usage[] =
 						"  \t--prior <arg>  \tPOMCP prior." },
 				{ E_PRIOR, 0, "", "world", option::Arg::Required,
 						"  \t--world <arg>  \tWorld type (pomdp, simulator, or real)." },
+          { E_GEOMETRIC_SEARCH_DEPTH, 0, "geo", "geometric_search_depth", option::Arg::Required,
+                  "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
 				{ 0, 0, 0, 0, 0, 0 } };
 
 /* =============================================================================
@@ -212,7 +215,7 @@ public:
 	/**
 	 * Display gloabl parameters
 	 */
-	void DisplayParameters(option::Option* options, DSPOMDP* model);
+	void DisplayParameters(option::Option* options, DSPOMDP* model, string solver);
 
 	/**
 	 * Print time records and statistics results

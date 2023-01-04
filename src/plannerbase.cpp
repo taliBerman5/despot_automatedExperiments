@@ -92,7 +92,10 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
 					{ E_SOLVER, 0, "", "solver", option::Arg::Required,
 							"  \t--solver <arg>  \t" }, { E_PRIOR, 0, "",
 							"prior", option::Arg::Required,
-							"  \t--prior <arg>  \tPOMCP prior." }, { 0, 0, 0, 0,
+							"  \t--prior <arg>  \tPOMCP prior." },{ E_GEOMETRIC_SEARCH_DEPTH, 0, "",
+                "geometric_search_depth", option::Arg::Required,
+                "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
+                { 0, 0, 0, 0,
 							0, 0 } };
 	return usage;
 }
@@ -313,6 +316,12 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
 	if (options[E_VERBOSITY])
 		verbosity = atoi(options[E_VERBOSITY].arg);
 	logging::level(verbosity);
+
+    if (options[E_GEOMETRIC_SEARCH_DEPTH]){
+        Globals::config.geometric_search_depth = true;
+        Globals::config.geometric_probability = atoi(options[E_GEOMETRIC_SEARCH_DEPTH].arg);
+    }
+
 }
 
 void PlannerBase::InitializeLogger(Logger *&logger,
@@ -331,13 +340,14 @@ void PlannerBase::InitializeLogger(Logger *&logger,
 	}
 }
 
-void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model) {
+void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, string solver) {
 
 	string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
 	string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
+    string search_depth = Globals::config.geometric_search_depth ? "Geometric, p:" + to_string(Globals::config.geometric_probability)  : to_string(Globals::config.search_depth);
 	default_out<< "Model = " << typeid(*model).name() << endl
 	<< "Random root seed = " << Globals::config.root_seed << endl
-	<< "Search depth = " << Globals::config.search_depth << endl
+	<< "Search depth = " << search_depth << endl
 	<< "Discount = " << Globals::config.discount << endl
 	<< "Simulation steps = " << Globals::config.sim_len << endl
 	<< "Number of scenarios = " << Globals::config.num_scenarios
@@ -350,8 +360,8 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model) {
 	<< "Upper bound = " << ubtype << endl
 	<< "Policy simulation depth = "
 	<< Globals::config.max_policy_sim_len << endl
-	<< "Target gap ratio = " << Globals::config.xi << endl;
-	// << "Solver = " << typeid(*solver).name() << endl << endl;
+	<< "Target gap ratio = " << Globals::config.xi << endl
+    << "Solver = " << solver << endl << endl;
 }
 
 void PlannerBase::PrintResult(int num_runs, Logger *logger,
