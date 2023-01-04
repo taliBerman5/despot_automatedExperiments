@@ -42,6 +42,7 @@ class BaseTag: public MDP,
 
 protected:
 	static double TAG_REWARD;
+	static double UNSUCCESSFUL_TAG_REWARD;
 
 	Floor floor_;
 

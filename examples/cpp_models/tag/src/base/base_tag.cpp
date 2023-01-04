@@ -416,6 +416,7 @@ public:
  * BaseTag class
  * ==============================================================================*/
 double BaseTag::TAG_REWARD = 10;
+double BaseTag::UNSUCCESSFUL_TAG_REWARD = -10;
 
 string BaseTag::RandomMap(int height, int width, int obstacles) {
 	string map(height * (width + 1) - 1, '.');
@@ -533,7 +534,7 @@ bool BaseTag::Step(State& s, double random_num, ACT_TYPE action,
 			reward = TAG_REWARD;
 			terminal = true;
 		} else {
-			reward = -TAG_REWARD;
+			reward = UNSUCCESSFUL_TAG_REWARD;
 		}
 	} else {
 		reward = -1;
@@ -995,7 +996,7 @@ double BaseTag::StepReward(const Belief* belief, ACT_TYPE action) const {
 			if (rob_[state->state_id] == opp_[state->state_id]) {
 				reward = TAG_REWARD;
 			} else {
-				reward = -TAG_REWARD;
+				reward = UNSUCCESSFUL_TAG_REWARD;
 			}
 		} else {
 			reward = -1;
@@ -1013,7 +1014,7 @@ double BaseTag::Reward(int s, ACT_TYPE action) const {
 		if (rob_[state->state_id] == opp_[state->state_id]) {
 			reward = TAG_REWARD;
 		} else {
-			reward = -TAG_REWARD;
+			reward = UNSUCCESSFUL_TAG_REWARD;
 		}
 	} else {
 		reward = -1;

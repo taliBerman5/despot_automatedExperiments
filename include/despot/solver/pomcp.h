@@ -4,6 +4,8 @@
 #include <despot/interface/pomdp.h>
 #include <despot/core/node.h>
 #include <despot/core/globals.h>
+#include <random>
+
 
 namespace despot {
 
@@ -88,6 +90,11 @@ protected:
 	VNode* root_;
 	POMCPPrior* prior_;
 	bool reuse_;
+    std::default_random_engine generator_;
+    std::geometric_distribution<int> geo_;
+    int search_depth_;
+    double (*leaf_heuristic_)(State*, int, const DSPOMDP*,
+                           POMCPPrior*, int);
 
 public:
 	POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
@@ -101,13 +108,17 @@ public:
 	static VNode* CreateVNode(int depth, const State*, POMCPPrior* prior,
 		const DSPOMDP* model);
 	static double Simulate(State* particle, VNode* root, const DSPOMDP* model,
-		POMCPPrior* prior);
+		POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int));
 	static double Simulate(State* particle, RandomStreams& streams,
 		VNode* vnode, const DSPOMDP* model, POMCPPrior* prior);
 	static double Rollout(State* particle, int depth, const DSPOMDP* model,
-		POMCPPrior* prior);
+		POMCPPrior* prior, int search_depth);
 	static double Rollout(State* particle, RandomStreams& streams, int depth,
 		const DSPOMDP* model, POMCPPrior* prior);
+    static double Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
+                          POMCPPrior* prior, int search_depth);
+    static double Value_iteration_heuristic(State* particle, int depth, const DSPOMDP* model,
+                          POMCPPrior* prior, int search_depth);
 	static ValuedAction Evaluate(VNode* root, std::vector<State*>& particles,
 		RandomStreams& streams, const DSPOMDP* model, POMCPPrior* prior);
 	static ACT_TYPE UpperBoundAction(const VNode* vnode, double explore_constant);

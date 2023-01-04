@@ -19,7 +19,8 @@ struct Config {
 	double noise;
 	bool silence;// toggle logging
     bool geometric_search_depth;
-    int geometric_probability;
+    double geometric_probability;
+    std::string leaf_heuristic;
 
 	Config() :
 		time_per_move(1),
@@ -35,7 +36,8 @@ struct Config {
 		noise(0.1),
 		silence(false),
         geometric_search_depth(false),
-        geometric_probability(90){
+        geometric_probability(0.5),
+        leaf_heuristic("rollout"){
 	}
 };
 

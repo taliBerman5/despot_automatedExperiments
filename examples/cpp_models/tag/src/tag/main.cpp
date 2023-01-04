@@ -15,8 +15,11 @@ public:
   }
 
   DSPOMDP* InitializeModel(option::Option* options) {
-    DSPOMDP* model = !options[E_PARAMS_FILE] ?
-      new Tag() : new Tag(options[E_PARAMS_FILE].arg);
+      DSPOMDP* model = new Tag() ;
+      if (options[E_PARAMS_FILE])
+          model = new Tag(options[E_PARAMS_FILE].arg);
+      else if (options[E_UNSUCCESSFUL_REWARD])
+          model = new Tag(atoi(options[E_UNSUCCESSFUL_REWARD].arg));
     return model;
   }
 

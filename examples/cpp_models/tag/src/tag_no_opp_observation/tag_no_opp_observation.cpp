@@ -30,6 +30,10 @@ TagNoOppObs::TagNoOppObs() {
   robot_pos_unknown_ = false;
 }
 
+TagNoOppObs::TagNoOppObs(int unsuccessful_tag_reward): TagNoOppObs(){
+    BaseTag::UNSUCCESSFUL_TAG_REWARD = unsuccessful_tag_reward;
+}
+
 TagNoOppObs::TagNoOppObs(string params_file) :
 	BaseTag(params_file) {
 	same_loc_obs_ = floor_.NumCells();
@@ -140,5 +144,14 @@ void TagNoOppObs::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const
 		out << "Rob at (" << rob.x << ", " << rob.y << ")" << endl;
 	}
 }
+
+double TagNoOppObs::VI_state_value(State* state) const{
+    return this->VI_state_value_[state->state_id];
+}
+
+double TagNoOppObs::Sarsop_state_value(State* state) const{
+    return this->sarsop_state_value_[state->state_id];
+}
+
 
 } // namespace despot

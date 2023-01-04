@@ -14,11 +14,14 @@ public:
 				base_lower_bound_str) {
   }
 
-  DSPOMDP* InitializeModel(option::Option* options) {
-    DSPOMDP* model = !options[E_PARAMS_FILE] ?
-      new TagNoOppObs() : new TagNoOppObs(options[E_PARAMS_FILE].arg);
+DSPOMDP* InitializeModel(option::Option* options) {
+    DSPOMDP* model = new TagNoOppObs() ;
+    if (options[E_PARAMS_FILE])
+        model = new TagNoOppObs(options[E_PARAMS_FILE].arg);
+    else if (options[E_UNSUCCESSFUL_REWARD])
+        model = new TagNoOppObs(atoi(options[E_UNSUCCESSFUL_REWARD].arg));
     return model;
-  }
+}
 
   World* InitializeWorld(std::string&  world_type, DSPOMDP* model, option::Option* options)
   {

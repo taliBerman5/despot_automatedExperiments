@@ -62,6 +62,10 @@ POMCP::POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	reuse_ = false;
 	prior_ = prior;
 	assert(prior_ != NULL);
+    geo_.param(geometric_distribution<int>::param_type(Globals::config.geometric_probability));
+    search_depth_ = Globals::config.search_depth;
+    double (*rolloutFunc)(State*, int, const DSPOMDP*, POMCPPrior*, int) = Rollout;
+    leaf_heuristic_ = Globals::config.leaf_heuristic == "SARSOP" ? Sarsop_heuristic : Globals::config.leaf_heuristic == "VI" ? Value_iteration_heuristic : rolloutFunc;
 }
 
 void POMCP::reuse(bool r) {
@@ -86,7 +90,10 @@ ValuedAction POMCP::Search(double timeout) {
 			State* particle = particles[i];
 			logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
 
-			Simulate(particle, root_, model_, prior_);
+            if(Globals::config.geometric_search_depth) //sets the search depth according to a sample from geometric distribution
+                search_depth_ = geo_(generator_);
+
+			Simulate(particle, root_, model_, prior_, search_depth_, leaf_heuristic_);
  
 			num_sims++;
 			logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
@@ -305,9 +312,9 @@ double POMCP::Simulate(State* particle, RandomStreams& streams, VNode* vnode,
 
 // static
 double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
-	POMCPPrior* prior) {
+	POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int)) {
 	assert(vnode != NULL);
-	if (vnode->depth() >= Globals::config.search_depth)
+	if (vnode->depth() >= search_depth)
 		return 0;
 
 	double explore_constant = prior->exploration_constant();
@@ -324,12 +331,12 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 		map<OBS_TYPE, VNode*>& vnodes = qnode->children();
 		if (vnodes[obs] != NULL) {
 			reward += Globals::Discount()
-				* Simulate(particle, vnodes[obs], model, prior);
+				* Simulate(particle, vnodes[obs], model, prior, search_depth, leaf_heuristic);
 		} else { // Rollout upon encountering a node not in curren tree, then add the node
 			vnodes[obs] = CreateVNode(vnode->depth() + 1, particle, prior,
 				model);
 			reward += Globals::Discount()
-				* Rollout(particle, vnode->depth() + 1, model, prior);
+				* leaf_heuristic(particle, vnode->depth() + 1, model, prior, search_depth);
 		}
 		prior->PopLast();
 	}
@@ -368,10 +375,21 @@ double POMCP::Rollout(State* particle, RandomStreams& streams, int depth,
 	return reward;
 }
 
+double POMCP::Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
+                      POMCPPrior* prior, int search_depth){
+return model->Sarsop_state_value(particle);
+}
+
+double POMCP::Value_iteration_heuristic(State* particle, int depth, const DSPOMDP* model,
+                               POMCPPrior* prior, int search_depth){
+    return model->VI_state_value(particle);
+}
+
+
 // static
 double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
-	POMCPPrior* prior) {
-	if (depth >= Globals::config.search_depth) {
+	POMCPPrior* prior, int search_depth) {
+	if (depth >= search_depth) {
 		return 0;
 	}
 
@@ -382,7 +400,7 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 	bool terminal = model->Step(*particle, action, reward, obs);
 	if (!terminal) {
 		prior->Add(action, obs);
-		reward += Globals::Discount() * Rollout(particle, depth + 1, model, prior);
+		reward += Globals::Discount() * Rollout(particle, depth + 1, model, prior, search_depth);
 		prior->PopLast();
 	}
 
@@ -446,6 +464,8 @@ ValuedAction POMCP::Evaluate(VNode* root, vector<State*>& particles,
 
 	return ValuedAction(UpperBoundAction(root, 0), value / particles.size());
 }
+
+
 
 /* =============================================================================
  * DPOMCP class

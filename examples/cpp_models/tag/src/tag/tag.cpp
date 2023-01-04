@@ -27,7 +27,12 @@ Tag::Tag() {
 			obs_[s] = (rob == opp ? same_loc_obs_ : rob);
 		}
 	}
-  robot_pos_unknown_ = false;
+    robot_pos_unknown_ = false;
+    init_state_value();
+}
+
+Tag::Tag(int unsuccessful_tag_reward): Tag(){
+    BaseTag::UNSUCCESSFUL_TAG_REWARD = unsuccessful_tag_reward;
 }
 
 Tag::Tag(string params_file) :
@@ -40,7 +45,24 @@ Tag::Tag(string params_file) :
 			obs_[s] = (rob == opp ? same_loc_obs_ : rob);
 		}
 	}
-  robot_pos_unknown_ = false;
+    robot_pos_unknown_ = false;
+    init_state_value();
+}
+
+void Tag::init_state_value() {  //TODO: add the files, do it for sarsop and VI, change the sarsop file according to the tag reward
+    fstream newfile;
+    newfile.open("sarsop_noObs.out",ios::in);
+    if (newfile.is_open()) {   //checking whether the file is open
+        string tp;
+        vector<double> alpha_vec;
+        while (getline(newfile, tp)) {
+            std::stringstream iss( tp );
+            double number;
+            iss >> number;
+            sarsop_state_value_.push_back(number);
+        }
+        newfile.close();
+    }
 }
 
 bool Tag::Step(State& state, double random_num, ACT_TYPE action, double& reward,
@@ -131,5 +153,14 @@ void Tag::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const {
 		out << "Rob at (" << rob.x << ", " << rob.y << ")" << endl;
 	}
 }
+
+double Tag::VI_state_value(State* state) const{
+    return this->VI_state_value_[state->state_id];
+
+
+}double Tag::Sarsop_state_value(State* state) const{
+    return this->sarsop_state_value_[state->state_id];
+}
+
 
 } // namespace despot

@@ -54,7 +54,9 @@ enum OptionIndex {
 	E_SERVER,
 	E_PORT,
 	E_LOG,
-    E_GEOMETRIC_SEARCH_DEPTH
+    E_GEOMETRIC_SEARCH_DEPTH,
+    E_LEAF_HEURISTIC,
+    E_UNSUCCESSFUL_REWARD
 };
 
 option::Descriptor* BuildUsage(string lower_bounds_str,
@@ -126,6 +128,10 @@ const option::Descriptor usage[] =
 						"  \t--world <arg>  \tWorld type (pomdp, simulator, or real)." },
           { E_GEOMETRIC_SEARCH_DEPTH, 0, "geo", "geometric_search_depth", option::Arg::Required,
                   "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
+                { E_LEAF_HEURISTIC, 0, "lh", "leaf_heuristic", option::Arg::Required,
+                            "  \t--leaf_heuristic <arg>  \tleaf heuristic in pomcp solver." },
+                  { E_UNSUCCESSFUL_REWARD, 0, "ur", "unsuccessful_reward", option::Arg::Required,
+                            "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
 				{ 0, 0, 0, 0, 0, 0 } };
 
 /* =============================================================================

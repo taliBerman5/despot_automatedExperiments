@@ -95,6 +95,12 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
 							"  \t--prior <arg>  \tPOMCP prior." },{ E_GEOMETRIC_SEARCH_DEPTH, 0, "",
                 "geometric_search_depth", option::Arg::Required,
                 "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
+                { E_LEAF_HEURISTIC, 0, "",
+                      "leaf_heuristic", option::Arg::Required,
+                      "  \t--leaf_heuristic <arg>  \tleaf heuristic in pomcp solver." },
+                      { E_UNSUCCESSFUL_REWARD, 0, "",
+                      "unsuccessful_reward", option::Arg::Required,
+                      "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
                 { 0, 0, 0, 0,
 							0, 0 } };
 	return usage;
@@ -319,8 +325,12 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
 
     if (options[E_GEOMETRIC_SEARCH_DEPTH]){
         Globals::config.geometric_search_depth = true;
-        Globals::config.geometric_probability = atoi(options[E_GEOMETRIC_SEARCH_DEPTH].arg);
+        Globals::config.geometric_probability = atof(options[E_GEOMETRIC_SEARCH_DEPTH].arg);
     }
+
+    if (options[E_LEAF_HEURISTIC])
+        Globals::config.leaf_heuristic = options[E_LEAF_HEURISTIC].arg;
+
 
 }
 

@@ -15,9 +15,13 @@ namespace despot {
 
 class Tag: public BaseTag {
 private:
-  std::vector<OBS_TYPE> obs_;
+    std::vector<OBS_TYPE> obs_;
+    std::vector<double> VI_state_value_;
+    std::vector<double> sarsop_state_value_;
+    void init_state_value();
 public:
 	Tag();
+    Tag(int unsuccessful_tag_reward);
 	Tag(std::string params_file);
 
 	bool Step(State& state, double random_num, ACT_TYPE action, double& reward,
@@ -33,6 +37,9 @@ public:
 		std::map<OBS_TYPE, double>& obss) const;
 
 	void PrintObs(const State& state, OBS_TYPE obs, std::ostream& out = std::cout) const;
+
+    double VI_state_value( State* state) const;
+    double Sarsop_state_value( State* state) const;
 };
 
 } // namespace despot
