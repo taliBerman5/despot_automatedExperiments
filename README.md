@@ -155,13 +155,38 @@ target_link_libraries("YOUR_PROJECT_NAME"
 Pocman implementation and memorypool.h in the package are based on David
 Silver's [POMCP code](http://www0.cs.ucl.ac.uk/staff/D.Silver/web/Applications.html)
 
-## Bugs and Suggestions
-Please use the issue tracker.
 
-## Release Notes
-2015/09/28 Initial release.
 
-2017/03/07 Public release. Revised documentation.
 
-2018/09/20 New API release.
+# Experiment wrapper
 
+`runexp` is a shell script that wraps an experiment and adds a line to the CSV-formatted log.
+For example, running
+
+	runexp -l tag.log tag/tag --runs 100
+
+Will add line
+
+    N6despot3TagE,90,90,5,-9.22297,1.87514,-11.4,3.34186,110.938
+
+to file `tag.log`. If the log file is empty, the header is added first, so the resulting 
+file may look like
+
+	model,depth,steps,runs,drmean,drstd,urmean,urstd,cputime
+	N6despot3TagE,90,90,5,-8.46979,2.57059,-12.2,5.79931,114.888
+	N6despot3TagE,90,90,5,-3.28042,2.83195,-2.6,2.94754,65.013
+	...
+
+
+More fields can be added if desired.
+
+
+optional flags - 
+--runs <number>: number of rounds
+--solver <solver name>: determine the solver
+--depth <number>: search depth in simulate
+--geometric <number>: search depth is detirmened based on geometric distribution, number is p in the distributaion
+--leaf_heuristic <heuristic type>: default is rollout. options - rollout, sarsop, value_iteration
+--check_default_policy : for pomcp, runs only rollouts. The constructed tree depth is 1. 
+
+more flags can be found in plannerbase.h under const option::Descriptor usage[]
