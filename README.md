@@ -192,4 +192,4 @@ optional flags -
 --check_default_policy : for pomcp, runs only rollouts. The constructed tree depth is 1. 
 
 ```
-more flags can be found in plannerbase.h under const option::Descriptor usage[]
+more flags can be found in `plannerbase.h` under `const option::Descriptor usage[]`
