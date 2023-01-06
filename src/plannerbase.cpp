@@ -359,6 +359,7 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 	string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
 	string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
     string search_depth = Globals::config.geometric_search_depth ? "Geometric, p:" + to_string(Globals::config.geometric_probability)  : to_string(Globals::config.search_depth);
+    string unsuccessful_reward  = Globals::config.unsuccessful_reward == -1e10 ? "default" : to_string(Globals::config.unsuccessful_reward );
 	default_out<< "Model = " << typeid(*model).name() << endl
 	<< "Random root seed = " << Globals::config.root_seed << endl
 	<< "Search depth = " << search_depth << endl
@@ -375,7 +376,9 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 	<< "Policy simulation depth = "
 	<< Globals::config.max_policy_sim_len << endl
 	<< "Target gap ratio = " << Globals::config.xi << endl
-    << "Solver = " << solver << endl << endl;
+    << "Solver = " << solver << endl
+    << "Leaf Heuristic = " << Globals::config.leaf_heuristic <<endl
+    << "Unsuccessful Reward = " << unsuccessful_reward <<endl << endl;
 }
 
 void PlannerBase::PrintResult(int num_runs, Logger *logger,
