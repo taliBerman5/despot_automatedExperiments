@@ -50,31 +50,18 @@ TagNoOppObs::TagNoOppObs(string params_file) :
 }
 
 
-void TagNoOppObs::Insert_state_value_data(string file_name, vector<double>& state_value){
-    fstream newfile;
-    newfile.open(file_name,ios::in);
-    if (newfile.is_open()) {   //checking whether the file is open
-        string tp;
-        vector<double> alpha_vec;
-        while (getline(newfile, tp)) {
-            std::stringstream iss( tp );
-            double number;
-            iss >> number;
-            state_value.push_back(number);
-        }
-        newfile.close();
-    }
-}
-
 void TagNoOppObs::init_state_value() {
-    string sarsop_file_name = "sarsop_noObs";
+    // create sarsop_state_value_
+    string sarsop_file_name = "sarsop_noObs.out";
     if (Globals::config.unsuccessful_reward != -1e10)
-        sarsop_file_name += to_string(Globals::config.unsuccessful_reward);
-
-    sarsop_file_name += ".out";
+        sarsop_file_name = "sarsop_noObs" + to_string(Globals::config.unsuccessful_reward) + ".out";
 
     Insert_state_value_data(sarsop_file_name, sarsop_state_value_);
-    Insert_state_value_data("VI.out", VI_state_value_);
+
+    // create VI_state_value_
+    const_cast<TagNoOppObs*>(this)->ComputeOptimalPolicyUsingVI();  //compute value iteration
+    for(int s = 0; s < NumStates(); s++)
+        VI_state_value_.push_back(policy_[s].value);
 }
 
 bool TagNoOppObs::Step(State& state, double random_num, ACT_TYPE action, double& reward,

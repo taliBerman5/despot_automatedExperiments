@@ -19,7 +19,6 @@ private:
     std::vector<double> VI_state_value_;
     std::vector<double> sarsop_state_value_;
     void init_state_value();
-    void Insert_state_value_data(std::string file_name, std::vector<double>& state_value);
 public:
 	Tag();
     Tag(int unsuccessful_tag_reward);

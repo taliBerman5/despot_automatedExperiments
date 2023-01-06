@@ -169,6 +169,23 @@ double DSPOMDP::Sarsop_state_value(State *pState) const {
     return 0;
 }
 
+
+void DSPOMDP::Insert_state_value_data(string file_name, vector<double>& state_value){
+    fstream newfile;
+    newfile.open(file_name,ios::in);
+    if (newfile.is_open()) {   //checking whether the file is open
+        string tp;
+        vector<double> alpha_vec;
+        while (getline(newfile, tp)) {
+            std::stringstream iss( tp );
+            double number;
+            iss >> number;
+            state_value.push_back(number);
+        }
+        newfile.close();
+    }
+}
+
 /* =============================================================================
  * BeliefMDP classs
  * =============================================================================*/

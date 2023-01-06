@@ -49,26 +49,14 @@ Tag::Tag(string params_file) :
     init_state_value();
 }
 
-void Tag::Insert_state_value_data(string file_name, vector<double>& state_value){
-    fstream newfile;
-    newfile.open(file_name,ios::in);
-    if (newfile.is_open()) {   //checking whether the file is open
-        string tp;
-        vector<double> alpha_vec;
-        while (getline(newfile, tp)) {
-            std::stringstream iss( tp );
-            double number;
-            iss >> number;
-            state_value.push_back(number);
-        }
-        newfile.close();
-    }
-}
-
 
 void Tag::init_state_value() {
     Insert_state_value_data("sarsop.out", sarsop_state_value_);
-    Insert_state_value_data("VI.out", VI_state_value_);
+
+    // create VI_state_value_
+    const_cast<Tag*>(this)->ComputeOptimalPolicyUsingVI();  //compute value iteration
+    for(int s = 0; s < NumStates(); s++)
+        VI_state_value_.push_back(policy_[s].value);
 }
 
 bool Tag::Step(State& state, double random_num, ACT_TYPE action, double& reward,
