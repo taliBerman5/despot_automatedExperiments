@@ -27,7 +27,8 @@ TagNoOppObs::TagNoOppObs() {
             obs_[s] = rob;
 		}
 	}
-  robot_pos_unknown_ = false;
+    robot_pos_unknown_ = false;
+    init_state_value();
 }
 
 TagNoOppObs::TagNoOppObs(int unsuccessful_tag_reward): TagNoOppObs(){
@@ -45,6 +46,35 @@ TagNoOppObs::TagNoOppObs(string params_file) :
 		}
 	}
   robot_pos_unknown_ = false;
+    init_state_value();
+}
+
+
+void TagNoOppObs::Insert_state_value_data(string file_name, vector<double>& state_value){
+    fstream newfile;
+    newfile.open(file_name,ios::in);
+    if (newfile.is_open()) {   //checking whether the file is open
+        string tp;
+        vector<double> alpha_vec;
+        while (getline(newfile, tp)) {
+            std::stringstream iss( tp );
+            double number;
+            iss >> number;
+            state_value.push_back(number);
+        }
+        newfile.close();
+    }
+}
+
+void TagNoOppObs::init_state_value() {
+    string sarsop_file_name = "sarsop_noObs";
+    if (Globals::config.unsuccessful_reward != -1e10)
+        sarsop_file_name += to_string(Globals::config.unsuccessful_reward);
+
+    sarsop_file_name += ".out";
+
+    Insert_state_value_data(sarsop_file_name, sarsop_state_value_);
+    Insert_state_value_data("VI.out", VI_state_value_);
 }
 
 bool TagNoOppObs::Step(State& state, double random_num, ACT_TYPE action, double& reward,

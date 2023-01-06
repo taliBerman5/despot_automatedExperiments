@@ -49,9 +49,9 @@ Tag::Tag(string params_file) :
     init_state_value();
 }
 
-void Tag::init_state_value() {  //TODO: add the files, do it for sarsop and VI, change the sarsop file according to the tag reward
+void Tag::Insert_state_value_data(string file_name, vector<double>& state_value){
     fstream newfile;
-    newfile.open("sarsop_noObs.out",ios::in);
+    newfile.open(file_name,ios::in);
     if (newfile.is_open()) {   //checking whether the file is open
         string tp;
         vector<double> alpha_vec;
@@ -59,10 +59,16 @@ void Tag::init_state_value() {  //TODO: add the files, do it for sarsop and VI, 
             std::stringstream iss( tp );
             double number;
             iss >> number;
-            sarsop_state_value_.push_back(number);
+            state_value.push_back(number);
         }
         newfile.close();
     }
+}
+
+
+void Tag::init_state_value() {
+    Insert_state_value_data("sarsop.out", sarsop_state_value_);
+    Insert_state_value_data("VI.out", VI_state_value_);
 }
 
 bool Tag::Step(State& state, double random_num, ACT_TYPE action, double& reward,

@@ -331,6 +331,10 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
     if (options[E_LEAF_HEURISTIC])
         Globals::config.leaf_heuristic = options[E_LEAF_HEURISTIC].arg;
 
+    if (options[E_UNSUCCESSFUL_REWARD])
+        Globals::config.unsuccessful_reward = atof(options[E_UNSUCCESSFUL_REWARD].arg);
+
+
 
 }
 

@@ -21,6 +21,7 @@ struct Config {
     bool geometric_search_depth;
     double geometric_probability;
     std::string leaf_heuristic;
+    double unsuccessful_reward;
 
 	Config() :
 		time_per_move(1),
@@ -37,7 +38,8 @@ struct Config {
 		silence(false),
         geometric_search_depth(false),
         geometric_probability(0.5),
-        leaf_heuristic("rollout"){
+        leaf_heuristic("rollout"),
+        unsuccessful_reward(-1e10){
 	}
 };
 
