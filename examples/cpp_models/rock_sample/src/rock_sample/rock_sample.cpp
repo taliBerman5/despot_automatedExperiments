@@ -11,11 +11,25 @@ namespace despot {
 RockSample::RockSample(string map) :
 	BaseRockSample(map) {
 	half_efficiency_distance_ = 20;
+    InitializeTransitions();  //TODO: make sure this is correct
+    init_state_value();
 }
 
 RockSample::RockSample(int size, int rocks) :
 	BaseRockSample(size, rocks) {
 	half_efficiency_distance_ = 20;
+    InitializeTransitions();
+    init_state_value();
+}
+
+
+void RockSample::init_state_value() {
+    Insert_state_value_data("sarsop.out", sarsop_state_value_);
+
+    // create VI_state_value_
+    const_cast<RockSample*>(this)->ComputeOptimalPolicyUsingVI();  //compute value iteration
+    for(int s = 0; s < NumStates(); s++)
+        VI_state_value_.push_back(policy_[s].value);
 }
 
 bool RockSample::Step(State& state, double rand_num, ACT_TYPE action, double& reward,
@@ -118,6 +132,29 @@ void RockSample::PrintObs(const State& state, OBS_TYPE observation,
 		out << "Bad" << endl;
 		break;
 	}
+}
+
+double RockSample::VI_state_value(State* state) const{
+    return this->VI_state_value_[state->state_id];
+
+
+}double RockSample::Sarsop_state_value(State* state) const{
+    return this->sarsop_state_value_[state->state_id];
+}
+
+
+void RockSample::InitializeTransitions() {
+    int num_states = NumStates(), num_actions = NumActions();
+    transition_probabilities_.resize(num_states);
+    for (int s = 0; s < num_states; s++) {
+        transition_probabilities_[s].resize(num_actions);
+        for (int a = 0; a < num_actions; a++) {
+            State state;
+            state.state_id = NextState(s, a);
+            state.weight = 1.0;
+            transition_probabilities_[s][a].push_back(state);
+        }
+    }
 }
 
 } // namespace despot
