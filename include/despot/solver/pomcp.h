@@ -95,6 +95,8 @@ protected:
     int search_depth_;
     double (*leaf_heuristic_)(State*, int, const DSPOMDP*,
                            POMCPPrior*, int);
+    double (*simulate_)(State*, VNode*, const DSPOMDP*,
+            POMCPPrior*, int, double (State*, int, const DSPOMDP*, POMCPPrior*, int));
 
 public:
 	POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
@@ -124,6 +126,11 @@ public:
 	static ACT_TYPE UpperBoundAction(const VNode* vnode, double explore_constant);
 	static ValuedAction OptimalAction(const VNode* vnode);
 	static int Count(const VNode* vnode);
+
+    static double
+    Check_default_policy_Simulate(State *particle, VNode *vnode, const DSPOMDP *model, POMCPPrior *prior,
+                                  int search_depth,
+                                  double (*leaf_heuristic)(State *, int, const DSPOMDP *, POMCPPrior *, int));
 };
 
 /* =============================================================================

@@ -56,7 +56,8 @@ enum OptionIndex {
 	E_LOG,
     E_GEOMETRIC_SEARCH_DEPTH,
     E_LEAF_HEURISTIC,
-    E_UNSUCCESSFUL_REWARD
+    E_UNSUCCESSFUL_REWARD,
+    E_CHECK_DEFAULT_POLICY
 };
 
 option::Descriptor* BuildUsage(string lower_bounds_str,
@@ -132,6 +133,8 @@ const option::Descriptor usage[] =
                             "  \t--leaf_heuristic <arg>  \tleaf heuristic in pomcp solver." },
                   { E_UNSUCCESSFUL_REWARD, 0, "ur", "unsuccessful_reward", option::Arg::Required,
                             "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
+          { E_CHECK_DEFAULT_POLICY, 0, "cdp", "check_default_policy", option::Arg::None,
+                  "  \t--check_default_policy <arg>  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
 				{ 0, 0, 0, 0, 0, 0 } };
 
 /* =============================================================================

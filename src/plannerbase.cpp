@@ -101,6 +101,9 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
                       { E_UNSUCCESSFUL_REWARD, 0, "",
                       "unsuccessful_reward", option::Arg::Required,
                       "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
+                      { E_CHECK_DEFAULT_POLICY, 0, "",
+                      "check_default_policy", option::Arg::None,
+                      "  \t--check_default_policy <arg>  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
                 { 0, 0, 0, 0,
 							0, 0 } };
 	return usage;
@@ -334,6 +337,8 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
     if (options[E_UNSUCCESSFUL_REWARD])
         Globals::config.unsuccessful_reward = atof(options[E_UNSUCCESSFUL_REWARD].arg);
 
+    if (options[E_CHECK_DEFAULT_POLICY])
+        Globals::config.check_default_policy = true;
 
 
 }

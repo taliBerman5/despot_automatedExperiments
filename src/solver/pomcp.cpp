@@ -64,8 +64,15 @@ POMCP::POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	assert(prior_ != NULL);
     geo_.param(geometric_distribution<int>::param_type(Globals::config.geometric_probability));
     search_depth_ = Globals::config.search_depth;
+
+    //set leaf_heuristic function
     double (*rolloutFunc)(State*, int, const DSPOMDP*, POMCPPrior*, int) = Rollout;
     leaf_heuristic_ = Globals::config.leaf_heuristic == "SARSOP" ? Sarsop_heuristic : Globals::config.leaf_heuristic == "VI" ? Value_iteration_heuristic : rolloutFunc;
+
+    //set simulate function
+    double (*simulate_func)(State*, VNode*, const DSPOMDP*,
+                        POMCPPrior*, int, double (State*, int, const DSPOMDP*, POMCPPrior*, int)) = Simulate;
+    simulate_ = Globals::config.check_default_policy ? Check_default_policy_Simulate : simulate_func;
 }
 
 void POMCP::reuse(bool r) {
@@ -93,7 +100,7 @@ ValuedAction POMCP::Search(double timeout) {
             if(Globals::config.geometric_search_depth) //sets the search depth according to a sample from geometric distribution
                 search_depth_ = geo_(generator_);
 
-			Simulate(particle, root_, model_, prior_, search_depth_, leaf_heuristic_);
+            simulate_(particle, root_, model_, prior_, search_depth_, leaf_heuristic_);
  
 			num_sims++;
 			logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
@@ -345,6 +352,35 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 	vnode->Add(reward);
 
 	return reward;
+}
+
+double POMCP::Check_default_policy_Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
+                       POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int)) {
+    assert(vnode != NULL);
+    if (vnode->depth() >= search_depth)
+        return 0;
+
+    double explore_constant = prior->exploration_constant();
+
+    ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
+
+    double reward;
+    OBS_TYPE obs;
+    bool terminal = model->Step(*particle, action, reward, obs);
+
+    QNode* qnode = vnode->Child(action);
+    if (!terminal) {
+        prior->Add(action, obs);
+        reward += Globals::Discount()
+                      * leaf_heuristic(particle, vnode->depth() + 1, model, prior, search_depth);
+
+        prior->PopLast();
+    }
+
+    qnode->Add(reward);
+    vnode->Add(reward);
+
+    return reward;
 }
 
 // static
