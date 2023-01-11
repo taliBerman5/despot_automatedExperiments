@@ -180,6 +180,8 @@ file may look like
 
 More fields can be added if desired.
 
+`runexpMain` is a shell script that run severals experiments by calling each time to `runexp`  
+
 
 optional flags - 
 
@@ -187,7 +189,7 @@ optional flags -
 --runs <number>: number of rounds
 --solver <solver name>: determine the solver
 --depth <number>: search depth in simulate
---geometric_search_depth <number>: search depth is detirmened based on geometric distribution, number is p in the distributaion
+--geometric_search_depth: search depth is detirmened based on geometric distribution, p in the distributaion is 1/search_depth 
 --leaf_heuristic <heuristic type>: default is rollout. options - rollout, SARSOP, VI (value iteration)
 --check_default_policy : for pomcp, runs only rollouts. The constructed tree depth is 1. 
 
