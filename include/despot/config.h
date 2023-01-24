@@ -19,7 +19,6 @@ struct Config {
 	double noise;
 	bool silence;// toggle logging
     bool geometric_search_depth;
-    double geometric_probability;
     std::string leaf_heuristic;
     double unsuccessful_reward;
     bool check_default_policy;
@@ -38,10 +37,9 @@ struct Config {
 		noise(0.1),
 		silence(false),
         geometric_search_depth(false),
-        geometric_probability(0.5),
         leaf_heuristic("rollout"),
         unsuccessful_reward(-1e10),
-        check_default_policy(true){
+        check_default_policy(false){
 	}
 };
 

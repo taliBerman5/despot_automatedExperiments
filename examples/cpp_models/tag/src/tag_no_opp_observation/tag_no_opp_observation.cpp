@@ -52,9 +52,9 @@ TagNoOppObs::TagNoOppObs(string params_file) :
 
 void TagNoOppObs::init_state_value() {
     // create sarsop_state_value_
-    string sarsop_file_name = "sarsop_noObs.out";
-    if (Globals::config.unsuccessful_reward != -1e10)
-        sarsop_file_name = "sarsop_noObs" + to_string(Globals::config.unsuccessful_reward) + ".out";
+    string sarsop_file_name = "examples/cpp_models/tag/sarsop_noObs.out";
+    if ((Globals::config.unsuccessful_reward != -1e10) & (Globals::config.unsuccessful_reward != -10))
+        sarsop_file_name = "examples/cpp_models/tag/sarsop_noObs" + to_string(Globals::config.unsuccessful_reward) + ".out";
 
     Insert_state_value_data(sarsop_file_name, sarsop_state_value_);
 
@@ -167,7 +167,7 @@ double TagNoOppObs::VI_state_value(State* state) const{
 }
 
 double TagNoOppObs::Sarsop_state_value(State* state) const{
-    return this->sarsop_state_value_[state->state_id];
+    return this->sarsop_state_value_[0];
 }
 
 

@@ -93,8 +93,8 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
 							"  \t--solver <arg>  \t" }, { E_PRIOR, 0, "",
 							"prior", option::Arg::Required,
 							"  \t--prior <arg>  \tPOMCP prior." },{ E_GEOMETRIC_SEARCH_DEPTH, 0, "",
-                "geometric_search_depth", option::Arg::Required,
-                "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
+                "geometric_search_depth", option::Arg::None,
+                "  \t--geometric_search_depth  \tgeometric serach depth, the probability is 1 / search depth." },
                 { E_LEAF_HEURISTIC, 0, "",
                       "leaf_heuristic", option::Arg::Required,
                       "  \t--leaf_heuristic <arg>  \tleaf heuristic in pomcp solver." },
@@ -103,7 +103,7 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
                       "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
                       { E_CHECK_DEFAULT_POLICY, 0, "",
                       "check_default_policy", option::Arg::None,
-                      "  \t--check_default_policy <arg>  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
+                      "  \t--check_default_policy  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
                 { 0, 0, 0, 0,
 							0, 0 } };
 	return usage;
@@ -326,10 +326,9 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
 		verbosity = atoi(options[E_VERBOSITY].arg);
 	logging::level(verbosity);
 
-    if (options[E_GEOMETRIC_SEARCH_DEPTH]){
+    if (options[E_GEOMETRIC_SEARCH_DEPTH])
         Globals::config.geometric_search_depth = true;
-        Globals::config.geometric_probability = atof(options[E_GEOMETRIC_SEARCH_DEPTH].arg);
-    }
+
 
     if (options[E_LEAF_HEURISTIC])
         Globals::config.leaf_heuristic = options[E_LEAF_HEURISTIC].arg;
@@ -363,11 +362,11 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 
 	string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
 	string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
-    string search_depth = Globals::config.geometric_search_depth ? "Geometric, p:" + to_string(Globals::config.geometric_probability)  : to_string(Globals::config.search_depth);
-    string unsuccessful_reward  = Globals::config.unsuccessful_reward == -1e10 ? "default" : to_string(Globals::config.unsuccessful_reward );
+//    string unsuccessful_reward  = Globals::config.unsuccessful_reward == -1e10 ? "default" : to_string(Globals::config.unsuccessful_reward );
 	default_out<< "Model = " << typeid(*model).name() << endl
 	<< "Random root seed = " << Globals::config.root_seed << endl
-	<< "Search depth = " << search_depth << endl
+	<< "Search depth = " << Globals::config.search_depth << endl
+	<< "Geometric search depth = " << Globals::config.geometric_search_depth << endl
 	<< "Discount = " << Globals::config.discount << endl
 	<< "Simulation steps = " << Globals::config.sim_len << endl
 	<< "Number of scenarios = " << Globals::config.num_scenarios
@@ -383,7 +382,8 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 	<< "Target gap ratio = " << Globals::config.xi << endl
     << "Solver = " << solver << endl
     << "Leaf Heuristic = " << Globals::config.leaf_heuristic <<endl
-    << "Unsuccessful Reward = " << unsuccessful_reward <<endl << endl;
+    << "Check default Policy = " << Globals::config.check_default_policy <<endl
+    << "Unsuccessful Reward = " << Globals::config.unsuccessful_reward <<endl << endl;
 }
 
 void PlannerBase::PrintResult(int num_runs, Logger *logger,

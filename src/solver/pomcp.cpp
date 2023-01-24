@@ -62,7 +62,7 @@ POMCP::POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	reuse_ = false;
 	prior_ = prior;
 	assert(prior_ != NULL);
-    geo_.param(geometric_distribution<int>::param_type(Globals::config.geometric_probability));
+    geo_.param(geometric_distribution<int>::param_type(1.0 / Globals::config.search_depth));
     search_depth_ = Globals::config.search_depth;
 
     //set leaf_heuristic function

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+DIR="examples/cpp_models"   # Domain directory
+LOG=/dev/stdout             # Log file output
+REWIND=false
+NUMRUN=1
+NOOBSTAG="-l tag_noOppObs.log tag/noobstag"
+ROCKSAMPLE="-l rock_sample.log rock_sample/rock_sample"
+SIZE=7
+NUMBER=8
+
+
+set -e
+make -C $DIR/tag
+make -C $DIR/rock_sample
+
+
+
+for i in 10  20 90
+do
+  echo "started " $i
+
+  for j in -1 -2 -10
+  do
+    echo "started " $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --depth $i --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --check_default_policy --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
+  done
+
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --depth $i
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic SARSOP
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth
+
+done
+
+
+
+
+
+
+
+
+

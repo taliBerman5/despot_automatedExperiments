@@ -127,14 +127,14 @@ const option::Descriptor usage[] =
 						"  \t--prior <arg>  \tPOMCP prior." },
 				{ E_PRIOR, 0, "", "world", option::Arg::Required,
 						"  \t--world <arg>  \tWorld type (pomdp, simulator, or real)." },
-          { E_GEOMETRIC_SEARCH_DEPTH, 0, "geo", "geometric_search_depth", option::Arg::Required,
-                  "  \t--geometric_search_depth <arg>  \tgeometric serach depth, arg is the probability." },
+          { E_GEOMETRIC_SEARCH_DEPTH, 0, "geo", "geometric_search_depth", option::Arg::None,
+                  "  \t--geometric_search_depth  \tgeometric serach depth, the probability is 1 / search depth." },
                 { E_LEAF_HEURISTIC, 0, "lh", "leaf_heuristic", option::Arg::Required,
                             "  \t--leaf_heuristic <arg>  \tleaf heuristic in pomcp solver." },
                   { E_UNSUCCESSFUL_REWARD, 0, "ur", "unsuccessful_reward", option::Arg::Required,
                             "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
           { E_CHECK_DEFAULT_POLICY, 0, "cdp", "check_default_policy", option::Arg::None,
-                  "  \t--check_default_policy <arg>  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
+                  "  \t--check_default_policy  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
 				{ 0, 0, 0, 0, 0, 0 } };
 
 /* =============================================================================

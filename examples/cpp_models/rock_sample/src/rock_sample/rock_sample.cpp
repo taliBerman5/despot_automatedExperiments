@@ -24,7 +24,7 @@ RockSample::RockSample(int size, int rocks) :
 
 
 void RockSample::init_state_value() {
-    Insert_state_value_data("sarsop.out", sarsop_state_value_);
+    Insert_state_value_data("examples/cpp_models/rock_sample/sarsop.out", sarsop_state_value_);
 
     // create VI_state_value_
     const_cast<RockSample*>(this)->ComputeOptimalPolicyUsingVI();  //compute value iteration
