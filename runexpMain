@@ -3,7 +3,7 @@
 DIR="examples/cpp_models"   # Domain directory
 LOG=/dev/stdout             # Log file output
 REWIND=false
-NUMRUN=1
+NUMRUN=50
 NOOBSTAG="-l tag_noOppObs.log tag/noobstag"
 ROCKSAMPLE="-l rock_sample.log rock_sample/rock_sample"
 SIZE=7
