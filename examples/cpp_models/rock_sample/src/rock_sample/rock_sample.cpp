@@ -11,7 +11,7 @@ namespace despot {
 RockSample::RockSample(string map) :
 	BaseRockSample(map) {
 	half_efficiency_distance_ = 20;
-    InitializeTransitions();  //TODO: make sure this is correct
+    InitializeTransitions();
     init_state_value();
 }
 
