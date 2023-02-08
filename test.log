@@ -1,4 +1,0 @@
-model,solver,depth,geometric_search_depth,steps,runs,leaf_heuristic,unsuccessful_reward,check_default_policy,drmean,drstd,urmean,urstd,cputime
-N6despot10RockSampleE,DESPOT,90,0,90,1,rollout,-1e+10,0,19.4598,0,50
-N6despot10RockSampleE,DESPOT,90,0,90,1,rollout,-1e+10,0,24.9088,0,60
-N6despot10RockSampleE,DESPOT,90,0,90,1,rollout,-1e+10,0,13.0658,0,30 0 27.5971
