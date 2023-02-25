@@ -26,7 +26,7 @@ shift $((OPTIND-1))
 
 if [ \! -e $LOG ]; then
     # If the log file does not exist, initialize with a header
-	echo "model,solver,depth,geometric_search_depth,steps,runs,leaf_heuristic,unsuccessful_reward,check_default_policy,drmean,drstd,urmean,urstd,cputime" > $LOG
+	echo "model,solver,discount_factor,depth,geometric_search_depth,steps,runs,leaf_heuristic,unsuccessful_reward,check_default_policy,drmean,drstd,urmean,urstd,cputime" > $LOG
 fi
 
 
@@ -34,6 +34,7 @@ $DIR/$@ | awk \
 '/^Model/ {model=$3}
  /^Solver/ {solver=$3}
  /^Search depth/ {depth=$4}
+ /^Discount/ {discount_factor=$3}
  /^Geometric/ {geometric_search_depth=$5}
  /^Simulation steps/ {steps=$4}
  /^Completed/ {runs=$2}
@@ -43,6 +44,6 @@ $DIR/$@ | awk \
  /^Average total discounted/ {drmean=$7; drstd=substr($8, 2, length($8)-2)}
  /^Average total undiscounted/ {urmean=$7;  urstd=substr($8, 2, length($8)-2)}
  /^Total time/ {cputime=substr($9, 1, length($9)-1)}
- END {printf "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
-             model,solver,depth,geometric_search_depth,steps,runs,leaf_heuristic,unsuccessful_reward,check_default_policy,drmean,drstd,urmean,urstd,cputime}
+ END {printf "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+             model,solver,discount_factor,depth,geometric_search_depth,steps,runs,leaf_heuristic,unsuccessful_reward,check_default_policy,drmean,drstd,urmean,urstd,cputime}
 ' >> $LOG

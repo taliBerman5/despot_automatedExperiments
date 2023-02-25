@@ -4,8 +4,8 @@ DIR="examples/cpp_models"   # Domain directory
 LOG=/dev/stdout             # Log file output
 REWIND=false
 NUMRUN=50
-NOOBSTAG="-l tag_noOppObs.log tag/noobstag"
-ROCKSAMPLE="-l rock_sample.log rock_sample/rock_sample"
+NOOBSTAG="-l tag_noOppObs_remaining.log tag/noobstag"
+ROCKSAMPLE="-l rock_sample_remaining.log rock_sample/rock_sample"
 SIZE=7
 NUMBER=8
 
@@ -23,10 +23,23 @@ do
   for j in -1 -2 -10
   do
     echo "started " $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
+      bash runexp $NOOBSTAG --runs $NUMRUN --depth $i --unsuccessful_reward $j --discount 0.7
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --unsuccessful_reward $j --discount 0.7
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j --discount 0.7
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
+
+      bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
   done
 
   bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic SARSOP
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic SARSOP --discount 0.7
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --discount 0.7
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI --discount 0.7
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy --discount 0.7
+  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth --discount 0.7
+
 
  for j in -2 -5
   do
@@ -35,6 +48,12 @@ do
     bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
     bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy --unsuccessful_reward $j
     bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
+
+    bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --unsuccessful_reward $j --discount 0.7
+    bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
+    bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
+    bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
+
   done
 done
 
