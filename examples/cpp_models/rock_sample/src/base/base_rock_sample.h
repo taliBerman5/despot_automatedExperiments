@@ -84,6 +84,7 @@ public:
 public:
 	BaseRockSample(std::string map);
 	BaseRockSample(int size, int rocks);
+    static double UNSUCCESSFUL_SAMPLE_REWARD;
 
 	virtual bool Step(State& state, double rand_num, ACT_TYPE action,
 		double& reward, OBS_TYPE& obs) const = 0;

@@ -22,6 +22,14 @@ RockSample::RockSample(int size, int rocks) :
     init_state_value();
 }
 
+RockSample::RockSample(int size, int rocks, double unsuccessful_sample_reward) :
+        BaseRockSample(size, rocks) {
+    BaseRockSample::UNSUCCESSFUL_SAMPLE_REWARD = unsuccessful_sample_reward;
+    half_efficiency_distance_ = 20;
+    InitializeTransitions();
+    init_state_value();
+}
+
 
 void RockSample::init_state_value() {
     Insert_state_value_data("examples/cpp_models/rock_sample/sarsop.out", sarsop_state_value_);
@@ -78,7 +86,7 @@ bool RockSample::Step(State& state, double rand_num, ACT_TYPE action, double& re
 			if (GetRock(&rockstate, rock))
 				reward = +10;
 			else
-				reward = -10;
+				reward = BaseRockSample::UNSUCCESSFUL_SAMPLE_REWARD;
 			SampleRock(&rockstate, rock);
 		} else {
 			reward = -100;

@@ -31,13 +31,16 @@ do
     bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
   done
 
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --depth $i
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic SARSOP
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy
-  bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth
-
+  for j in -2 -5 -10
+    do
+      echo "started " $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --check_default_policy --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
+    done
 done
 
 

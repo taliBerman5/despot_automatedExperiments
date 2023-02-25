@@ -27,7 +27,10 @@ public:
 				cerr << "Specify number of rocks using --number option" << endl;
 				exit(0);
 			}
-			model = new RockSample(size, number);
+            if (options[E_UNSUCCESSFUL_REWARD])
+                model = new RockSample(size, number, atoi(options[E_UNSUCCESSFUL_REWARD].arg));
+            else
+			    model = new RockSample(size, number);
 		}
     return model;
   }

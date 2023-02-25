@@ -31,7 +31,7 @@ Tag::Tag() {
     init_state_value();
 }
 
-Tag::Tag(int unsuccessful_tag_reward): Tag(){
+Tag::Tag(double unsuccessful_tag_reward): Tag(){
     BaseTag::UNSUCCESSFUL_TAG_REWARD = unsuccessful_tag_reward;
 }
 

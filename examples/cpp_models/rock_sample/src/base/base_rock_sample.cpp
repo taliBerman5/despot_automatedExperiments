@@ -576,6 +576,9 @@ public:
 	}
 };
 
+
+double BaseRockSample::UNSUCCESSFUL_SAMPLE_REWARD = -10;
+
 ScenarioLowerBound* BaseRockSample::CreateScenarioLowerBound(string name, string
 	particle_bound_name) const {
 	if (name == "TRIVIAL") {
@@ -1089,7 +1092,7 @@ double BaseRockSample::Reward(int s, ACT_TYPE a) const {
 			if (valuable)
 				return 10;
 			else
-				return -10;
+				return UNSUCCESSFUL_SAMPLE_REWARD;
 		}
 		return -100;
 	} else

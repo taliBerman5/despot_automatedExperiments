@@ -21,6 +21,7 @@ protected:
 public:
 	RockSample(std::string map);
 	RockSample(int size, int rocks);
+	RockSample(int size, int rocks, double unsuccessful_sample_reward);
 
 	bool Step(State& state, double rand_num, ACT_TYPE action, double& reward,
 		OBS_TYPE& obs) const;

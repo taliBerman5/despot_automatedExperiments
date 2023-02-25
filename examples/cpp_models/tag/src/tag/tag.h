@@ -21,7 +21,7 @@ private:
     void init_state_value();
 public:
 	Tag();
-    Tag(int unsuccessful_tag_reward);
+    Tag(double unsuccessful_tag_reward);
 	Tag(std::string params_file);
 
 	bool Step(State& state, double random_num, ACT_TYPE action, double& reward,
