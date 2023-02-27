@@ -149,6 +149,11 @@ public:
 	void IncY(State* state) const;
 	void DecY(State* state) const;
 
+    void CreateSARSOPTransitions(); //TB
+    double GetObservation_prob(int state_id, int rock) const; //TB
+    const RockSampleState GetRockState(int index) const; //TB
+
+
 protected:
 	void InitializeTransitions();
 	Coord IndexToCoord(int pos) const;
