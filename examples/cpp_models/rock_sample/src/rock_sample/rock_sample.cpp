@@ -20,6 +20,7 @@ RockSample::RockSample(int size, int rocks) :
 	half_efficiency_distance_ = 20;
     InitializeTransitions();
     init_state_value();
+    CreateSARSOPTransitions();
 }
 
 RockSample::RockSample(int size, int rocks, double unsuccessful_sample_reward) :
@@ -28,11 +29,18 @@ RockSample::RockSample(int size, int rocks, double unsuccessful_sample_reward) :
     half_efficiency_distance_ = 20;
     InitializeTransitions();
     init_state_value();
+    CreateSARSOPTransitions();
 }
 
 
 void RockSample::init_state_value() {
-    Insert_state_value_data("examples/cpp_models/rock_sample/sarsop.out", sarsop_state_value_);
+    // create sarsop_state_value_
+    string sarsop_file_name = "examples/cpp_models/rock_sample/sarsop.out";
+    if ((Globals::config.unsuccessful_reward != -1e10) & (Globals::config.unsuccessful_reward != -10))
+        sarsop_file_name = "examples/cpp_models/rock_sample/sarsop" + to_string(Globals::config.unsuccessful_reward) + ".out";
+
+    Insert_state_value_data(sarsop_file_name, sarsop_state_value_);
+
 
     // create VI_state_value_
     const_cast<RockSample*>(this)->ComputeOptimalPolicyUsingVI();  //compute value iteration
