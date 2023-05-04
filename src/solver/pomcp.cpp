@@ -209,8 +209,6 @@ ACT_TYPE POMCP::UpperBoundAction(const VNode* vnode, double explore_constant) {
 			best_action = action;
 		}
 	}
-    if (best_action == -1)
-        best_action = -1;
 	assert(best_action != -1);
 	return best_action;
 }
@@ -872,7 +870,6 @@ ValuedAction TPOMCP::Search(double timeout) {
     }
 
     int hist_size = history_.Size();
-    bool done = false;
     int num_sims = 0;
     while (true) {
         vector<State*> particles = belief_->Sample(1000);
@@ -890,13 +887,14 @@ ValuedAction TPOMCP::Search(double timeout) {
             logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
             history_.Truncate(hist_size);
 
-            if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout) {
-                done = true;
-                for (int i = 0; i < particles.size(); i++) {
-                    model_->Free(particles[i]);
-                }
-                break;
-            }
+
+        model_->Free(leading_particle);
+        for (int i = 0; i < particles.size(); i++) 
+            model_->Free(particles[i]);
+
+
+        if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout)
+            break;
     }
 
     logi << "[TPOMCP::Search] Time: CPU / Real = "
@@ -925,7 +923,7 @@ void TPOMCP::BeliefUpdate(ACT_TYPE action, OBS_TYPE obs) {
     history_.Add(action, obs);
     belief_->Update(action, obs);
 
-    logi << "[DPOMCP::Update] Updated belief, history and root with action "
+    logi << "[TPOMCP::Update] Updated belief, history and root with action "
          << action << ", observation " << obs
          << " in " << (get_time_second() - start) << "s" << endl;
 }
