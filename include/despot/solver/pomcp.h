@@ -176,17 +176,17 @@ public:
 
 
 /* =============================================================================
- * TPOMCP class
+ * FPOMCP class
  * =============================================================================*/
 
-class TPOMCP: public POMCP {
+class FPOMCP: public POMCP {
 protected:
     double (*simulate_)(State*, std::vector<State*>&, VNode*, const DSPOMDP*,
                         POMCPPrior*, int, double (State*, std::vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int));
     double (*leaf_heuristic_)(State*, std::vector<State*>&, int, const DSPOMDP*,
                               POMCPPrior*, int);
 public:
-    TPOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
+    FPOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
 
     virtual ValuedAction Search(double timeout);
     virtual void belief(Belief* b);

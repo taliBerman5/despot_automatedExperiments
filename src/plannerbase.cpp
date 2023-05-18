@@ -232,8 +232,8 @@ Solver *PlannerBase::InitializeSolver(DSPOMDP *model, Belief* belief,
 			solver = new AEMS(model, lower_bound, upper_bound);
 		} else
 			solver = new BeliefBaselineSolver(lower_bound);
-	} // POMCP or DPOMCP or TPOMCP
-	else if (solver_type == "POMCP" || solver_type == "DPOMCP" || solver_type == "TPOMCP") {
+	} // POMCP or DPOMCP or FPOMCP
+	else if (solver_type == "POMCP" || solver_type == "DPOMCP" || solver_type == "FPOMCP") {
 		string ptype = options[E_PRIOR] ? options[E_PRIOR].arg : "DEFAULT";
 		POMCPPrior *prior = model->CreatePOMCPPrior(ptype);
 
@@ -248,7 +248,7 @@ Solver *PlannerBase::InitializeSolver(DSPOMDP *model, Belief* belief,
         else if (solver_type == "DPOMCP")
             solver = new DPOMCP(model, prior);
 		else
-			solver = new TPOMCP(model, prior);
+			solver = new FPOMCP(model, prior);
 	} else { // Unsupported solver
 		cerr << "ERROR: Unsupported solver type: " << solver_type << endl;
 		exit(1);

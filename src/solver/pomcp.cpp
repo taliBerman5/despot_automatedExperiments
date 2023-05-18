@@ -831,11 +831,11 @@ void DPOMCP::BeliefUpdate(ACT_TYPE action, OBS_TYPE obs) {
 }
 
 /* =============================================================================
- * TPOMCP class
+ * FPOMCP class
  * =============================================================================*/
 
 
-TPOMCP::TPOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
+FPOMCP::FPOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
     POMCP(model, prior, belief) {
     reuse_ = false;
 
@@ -854,13 +854,13 @@ TPOMCP::TPOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
 
     }
 
-void TPOMCP::belief(Belief* b) {
+void FPOMCP::belief(Belief* b) {
     belief_ = b;
     history_.Truncate(0);
     prior_->PopAll();
 }
 
-ValuedAction TPOMCP::Search(double timeout) {
+ValuedAction FPOMCP::Search(double timeout) {
     double start_cpu = clock(), start_real = get_time_second();
 
     if (root_ == NULL) {
@@ -897,7 +897,7 @@ ValuedAction TPOMCP::Search(double timeout) {
             break;
     }
 
-    logi << "[TPOMCP::Search] Time: CPU / Real = "
+    logi << "[FPOMCP::Search] Time: CPU / Real = "
          << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / "
          << (get_time_second() - start_real) << endl << "Tree size = "
          << root_->Size() << endl;
@@ -916,14 +916,14 @@ ValuedAction TPOMCP::Search(double timeout) {
 }
 
 
-void TPOMCP::BeliefUpdate(ACT_TYPE action, OBS_TYPE obs) {
+void FPOMCP::BeliefUpdate(ACT_TYPE action, OBS_TYPE obs) {
     double start = get_time_second();
 
     prior_->Add(action, obs);  // TODO: maybe unnecessary
     history_.Add(action, obs);
     belief_->Update(action, obs);
 
-    logi << "[TPOMCP::Update] Updated belief, history and root with action "
+    logi << "[FPOMCP::Update] Updated belief, history and root with action "
          << action << ", observation " << obs
          << " in " << (get_time_second() - start) << "s" << endl;
 }
