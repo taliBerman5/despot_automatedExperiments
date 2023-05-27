@@ -113,23 +113,23 @@ public:
                            POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int));
 	static double Simulate(State* particle, RandomStreams& streams,
 		VNode* vnode, const DSPOMDP* model, POMCPPrior* prior,  double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int));
-    static double Simulate(State* leading_particle, std::vector<State*>& particles,
-                           VNode* vnode, const DSPOMDP* model, POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, std::vector<State *> &,  int, const DSPOMDP*, POMCPPrior*, int));
+    static std::vector<double> Simulate(State* leading_particle, std::vector<State*>& particles,
+                           VNode* vnode, const DSPOMDP* model, POMCPPrior* prior, int search_depth, std::vector<double> (*leaf_heuristic)(State*, std::vector<State *> &,  int, const DSPOMDP*, POMCPPrior*, int));
     static double Simulate(State* particle, RandomStreams& streams,
                            VNode* vnode, const DSPOMDP* model, POMCPPrior* prior);
     static double Rollout(State* particle, int depth, const DSPOMDP* model,
 		POMCPPrior* prior, int search_depth);
 	static double Rollout(State* particle, RandomStreams& streams, int depth,
 		const DSPOMDP* model, POMCPPrior* prior);
-    static double Rollout(State *leading_particle, std::vector<State *> &particles, int depth, const DSPOMDP *model,
+    static std::vector<double> Rollout(State *leading_particle, std::vector<State *> &particles, int depth, const DSPOMDP *model,
             POMCPPrior *prior, int search_depth);
     static double Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
                           POMCPPrior* prior, int search_depth);
-    static double Sarsop_heuristic(State* particle, std::vector<State *> &, int depth, const DSPOMDP* model,
+    static std::vector<double> Sarsop_heuristic(State* particle, std::vector<State *> &, int depth, const DSPOMDP* model,
                                    POMCPPrior* prior, int search_depth);
     static double Value_iteration_heuristic(State* particle, int depth, const DSPOMDP* model,
                           POMCPPrior* prior, int search_depth);
-    static double Value_iteration_heuristic(State* particle, std::vector<State *> &, int depth, const DSPOMDP* model,
+    static std::vector<double> Value_iteration_heuristic(State* particle, std::vector<State *> &, int depth, const DSPOMDP* model,
                                             POMCPPrior* prior, int search_depth);
 	static ValuedAction Evaluate(VNode* root, std::vector<State*>& particles,
 		RandomStreams& streams, const DSPOMDP* model, POMCPPrior* prior);
@@ -146,10 +146,10 @@ public:
                                   double (*leaf_heuristic)(State *, int, const DSPOMDP *, POMCPPrior *, int));
 
 
-    static double
+    static std::vector<double>
     Check_default_policy_Simulate(State *leading_particle, std::vector<State *> &particles, VNode *vnode,
                                          const DSPOMDP *model, POMCPPrior *prior, int search_depth,
-                                         double (*leaf_heuristic)(State *, std::vector<State*>&, int, const DSPOMDP *, POMCPPrior *, int));
+                                        std::vector<double>  (*leaf_heuristic)(State *, std::vector<State*>&, int, const DSPOMDP *, POMCPPrior *, int));
 };
 
 /* =============================================================================
@@ -176,17 +176,17 @@ public:
 
 
 /* =============================================================================
- * FPOMCP class
+ * LEAFOMCP class
  * =============================================================================*/
 
-class FPOMCP: public POMCP {
+class LEAFOMCP: public POMCP {
 protected:
-    double (*simulate_)(State*, std::vector<State*>&, VNode*, const DSPOMDP*,
-                        POMCPPrior*, int, double (State*, std::vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int));
-    double (*leaf_heuristic_)(State*, std::vector<State*>&, int, const DSPOMDP*,
+    std::vector<double> (*simulate_)(State*, std::vector<State*>&, VNode*, const DSPOMDP*,
+                        POMCPPrior*, int, std::vector<double> (State*, std::vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int));
+    std::vector<double> (*leaf_heuristic_)(State*, std::vector<State*>&, int, const DSPOMDP*,
                               POMCPPrior*, int);
 public:
-    FPOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
+    LEAFOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
 
     virtual ValuedAction Search(double timeout);
     virtual void belief(Belief* b);

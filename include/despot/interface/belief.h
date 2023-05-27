@@ -36,6 +36,7 @@ public:
 	 * @param num Number of states to be sampled
 	 */
 	virtual std::vector<State*> Sample(int num) const = 0;
+    virtual std::vector<State*> Sample(int num, double weight) const = 0;
 
 	/**
 	 * Update the belief.

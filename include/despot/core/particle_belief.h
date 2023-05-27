@@ -36,6 +36,7 @@ public:
 
 	virtual const std::vector<State*>& particles() const;
 	virtual std::vector<State*> Sample(int num) const;
+    virtual std::vector<State*> Sample(int num, double weight) const;
 
 	virtual void Update(ACT_TYPE action, OBS_TYPE obs);
 
@@ -44,7 +45,9 @@ public:
 	virtual std::string text() const;
 
 	static std::vector<State*> Sample(int num, std::vector<State*> belief,
-		const DSPOMDP* model);
+		const DSPOMDP* model, double weight);
+    static std::vector<State*> Sample(int num, std::vector<State*> belief,
+                                      const DSPOMDP* model);
 	static std::vector<State*> Resample(int num, const std::vector<State*>& belief,
 		const DSPOMDP* model, History history, int hstart = 0);
 	static std::vector<State*> Resample(int num, const Belief& belief,

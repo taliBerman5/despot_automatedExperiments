@@ -75,6 +75,7 @@ public:
 	bool IsLeaf();
 
 	void Add(double val);
+    void Add(double val, double weight);
 	void count(int c);
 	int count() const;
 	void value(double v);
@@ -132,6 +133,7 @@ public:
 	double upper_bound() const;
 
 	void Add(double val);
+    void Add(double val, double weight);
 	void count(int c);
 	int count() const;
 	void value(double v);

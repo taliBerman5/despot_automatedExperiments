@@ -157,6 +157,11 @@ void VNode::Add(double val) {
 	count_++;
 }
 
+void VNode::Add(double val, double weight) {
+    value_ = (value_ * count_ + val * weight) / (count_ + weight);
+    count_ += weight;
+}
+
 void VNode::count(int c) {
 	count_ = c;
 }
@@ -357,6 +362,11 @@ double QNode::upper_bound() const {
 void QNode::Add(double val) {
 	value_ = (value_ * count_ + val) / (count_ + 1);
 	count_++;
+}
+
+void QNode::Add(double val, double weight) {
+    value_ = (value_ * count_ + val * weight) / (count_ + weight);
+    count_ += weight;
 }
 
 void QNode::count(int c) {

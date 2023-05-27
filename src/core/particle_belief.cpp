@@ -87,9 +87,15 @@ const vector<State*>& ParticleBelief::particles() const {
 	return particles_;
 }
 
-vector<State*> ParticleBelief::Sample(int num) const {
-	return Sample(num, particles_, model_);
+vector<State*> ParticleBelief::Sample(int num, double weight) const {
+	return Sample(num, particles_, model_, weight);
 }
+
+
+vector<State*> ParticleBelief::Sample(int num) const {
+    return Sample(num, particles_, model_);
+}
+
 
 void ParticleBelief::Update(ACT_TYPE action, OBS_TYPE obs) {
 	history_.Add(action, obs);
@@ -202,7 +208,7 @@ string ParticleBelief::text() const {
 }
 
 vector<State*> ParticleBelief::Sample(int num, vector<State*> particles,
-	const DSPOMDP* model) {
+	const DSPOMDP* model, double weight) {
 
 	double unit = 1.0 / num;
 	double mass = Random::RANDOM.NextDouble(0, unit);
@@ -221,7 +227,7 @@ vector<State*> ParticleBelief::Sample(int num, vector<State*> particles,
 		mass += unit;
 
 		State* particle = model->Copy(particles[pos]);
-		particle->weight = unit;
+		particle->weight = weight;
 		sample.push_back(particle);
 	}
 
@@ -235,6 +241,41 @@ vector<State*> ParticleBelief::Sample(int num, vector<State*> particles,
 
 	return sample;
 }
+
+    vector<State*> ParticleBelief::Sample(int num, vector<State*> particles,
+                                          const DSPOMDP* model) {
+
+        double unit = 1.0 / num;
+        double mass = Random::RANDOM.NextDouble(0, unit);
+        int pos = 0;
+        double cur = particles[0]->weight;
+        vector<State*> sample;
+        for (int i = 0; i < num; i++) {
+            while (mass > cur) {
+                pos++;
+                if (pos == particles.size())
+                    pos = 0;
+
+                cur += particles[pos]->weight;
+            }
+
+            mass += unit;
+
+            State* particle = model->Copy(particles[pos]);
+            particle->weight = unit;
+            sample.push_back(particle);
+        }
+
+        random_shuffle(sample.begin(), sample.end());
+
+        logd << "[ParticleBelief::Sample] Sampled " << sample.size() << " particles"
+             << endl;
+        for (int i = 0; i < sample.size(); i++) {
+            logv << " " << i << " = " << *sample[i] << endl;
+        }
+
+        return sample;
+    }
 
 vector<State*> ParticleBelief::Resample(int num, const vector<State*>& belief,
 	const DSPOMDP* model, History history, int hstart) {

@@ -4,8 +4,8 @@ DIR="examples/cpp_models"   # Domain directory
 LOG=/dev/stdout             # Log file output
 REWIND=false
 NUMRUN=50
-NOOBSTAG="-l tag_noOppObs_FPOMCP.log tag/noobstag"
-ROCKSAMPLE="-l rock_sample_FPOMCP.log rock_sample/rock_sample"
+NOOBSTAG="-l tag_noOppObs_LEAFOMCP.log tag/noobstag"
+ROCKSAMPLE="-l rock_sample_LEAFOMCP.log rock_sample/rock_sample"
 SIZE=7
 NUMBER=8
 
@@ -23,33 +23,33 @@ do
   for j in -1 -2 -10
   do
     echo "started " $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --unsuccessful_reward $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --check_default_policy --unsuccessful_reward $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
 
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --unsuccessful_reward $j --discount 0.7
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j --discount 0.7
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver FPOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $j --discount 0.7
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j --discount 0.7
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
+    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
   done
 
   for j in -2 -5 -10
     do
       echo "started " $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --unsuccessful_reward $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --check_default_policy --unsuccessful_reward $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j
 
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --unsuccessful_reward $j --discount 0.7
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j --discount 0.7
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver FPOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --unsuccessful_reward $j --discount 0.7
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j --discount 0.7
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
 
     done
 done
