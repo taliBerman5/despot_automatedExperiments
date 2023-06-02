@@ -648,7 +648,7 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 vector<double> POMCP::Rollout(State* leading_particle, vector<State *> &particles, int depth, const DSPOMDP* model,
                       POMCPPrior* prior, int search_depth) {
     vector<double> Reward(particles.size() + 1);
-    Reward[0] = Rollout(leading_particle, depth, model, prior, search_depth); //perform a rollout starting the leader
+    Reward[0] = Rollout(leading_particle, depth, model, prior, search_depth); //perform a rollout starting from the leader
 
 
     for (int i = 0; i < particles.size(); i++) { //perform a rollout starting from a follower
