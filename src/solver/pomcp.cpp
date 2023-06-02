@@ -426,16 +426,16 @@ vector<double> POMCP::Simulate(State *leading_particle, vector<State *> &particl
     double followerObsWeight;
 
     bool terminal = model->Step(*leading_particle, action, Reward[0], leader_obs);
-    Weight[0] = leading_particle->weight;
+    Weight[0] = leading_particle->weight; // keep the current weight of the leader (the leader weight is 1)
     leaderObsWeight = model->ObsProb(leader_obs, *leading_particle, action);
 
-    for (int i = 0; i < particles.size(); i++) {
+    for (int i = 0; i < particles.size(); i++) { // sample the next state for each of the followers
         State* follower = particles[i];
         OBS_TYPE obs;
         model->Step(*follower, action, Reward[i+1], obs);
-        Weight[i+1] = follower->weight;
-        followerObsWeight = model->ObsProb(leader_obs, *follower, action);
-        follower->weight = follower->weight * (followerObsWeight / leaderObsWeight);
+        Weight[i+1] = follower->weight; // keep the current weight of the follower
+        followerObsWeight = model->ObsProb(leader_obs, *follower, action); // probability of getting the leader observation in the follower state
+        follower->weight = follower->weight * (followerObsWeight / leaderObsWeight); //update the follower weight
     }
 
     QNode* qnode = vnode->Child(action);
@@ -443,21 +443,22 @@ vector<double> POMCP::Simulate(State *leading_particle, vector<State *> &particl
         prior->Add(action, leader_obs);
         map<OBS_TYPE, VNode*>& vnodes = qnode->children();
         if (vnodes[leader_obs] != NULL) {
-            vector <double> simReward(Reward.size());
-            simReward = Simulate(leading_particle, particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
+            vector <double> simReward = Simulate(leading_particle, particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
+            //for each immediate reward (leader and each follower) add the reward from the recursive simulate multiplied by the discount factor - R + gamma * Simulate(particle)
             transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
 
         } else { // Rollout upon encountering a node not in curren tree, then add the node
-            vector <double> leafReward(Reward.size());
             vnodes[leader_obs] = CreateVNode(vnode->depth() + 1, leading_particle, prior,
                                              model);
-            leafReward = leaf_heuristic(leading_particle, particles, vnode->depth() + 1, model, prior, search_depth);
+            vector <double> leafReward = leaf_heuristic(leading_particle, particles, vnode->depth() + 1, model, prior, search_depth);
+            //for each immediate reward (leader and each follower) add the reward from the leaf_heuristic multiplied by the discount factor - R + gamma * leaf_heuristic(particle)
             transform(leafReward.begin(), leafReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
 
         }
         prior->PopLast();
     }
 
+    // update the qnode and vnode count and value with the leader and each follower weight and reward
     for(int i = 0; i < Reward.size(); i++) {
         qnode->Add(Reward[i], Weight[i]);
         vnode->Add(Reward[i], Weight[i]);
@@ -469,6 +470,7 @@ vector<double> POMCP::Simulate(State *leading_particle, vector<State *> &particl
 
     return Reward;
 }
+
 
 double POMCP::Check_default_policy_Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
                        POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int)) {
@@ -553,22 +555,18 @@ vector<double> POMCP::Check_default_policy_Simulate(State* leading_particle, vec
 
     vector<double> Weight(particles.size() + 1, 0.0);
     double reward;
-    double leader_reward;
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
 
-    bool terminal = model->Step(*leading_particle, action, leader_reward, leader_obs);
-    Reward[0] = leader_reward;
+    bool terminal = model->Step(*leading_particle, action, Reward[0], leader_obs);
     Weight[0] = leading_particle->weight;
     leaderObsWeight = model->ObsProb(leader_obs, *leading_particle, action);
 
     for (int i = 0; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
-        double follower_reward;
-        model->Step(*follower, action, follower_reward, obs);
-        Reward[i+1] = follower_reward;
+        model->Step(*follower, action, Reward[i+1], obs);
         Weight[i+1] = follower->weight;
         followerObsWeight = model->ObsProb(leader_obs, *follower, action);
         follower->weight = follower->weight * (followerObsWeight / leaderObsWeight);
@@ -650,10 +648,10 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 vector<double> POMCP::Rollout(State* leading_particle, vector<State *> &particles, int depth, const DSPOMDP* model,
                       POMCPPrior* prior, int search_depth) {
     vector<double> Reward(particles.size() + 1);
-    Reward[0] = Rollout(leading_particle, depth, model, prior, search_depth);
+    Reward[0] = Rollout(leading_particle, depth, model, prior, search_depth); //perform a rollout starting the leader
 
 
-    for (int i = 0; i < particles.size(); i++) {
+    for (int i = 0; i < particles.size(); i++) { //perform a rollout starting from a follower
         State* particle = particles[i];
         Reward[i+1] = Rollout(particle, depth, model, prior, search_depth);
     }
@@ -898,8 +896,8 @@ ValuedAction LEAFOMCP::Search(double timeout) {
     int hist_size = history_.Size();
     int num_sims = 0;
     while (true) {
-        vector<State*> particles = belief_->Sample(100, 1.0);
-        State* leading_particle = particles.back();
+        vector<State*> particles = belief_->Sample(Globals::config.num_scenarios, 1.0); // Sample K particles
+        State* leading_particle = particles.back(); //choose the leader and remove it from the followers
         particles.pop_back();
 
             logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
@@ -913,7 +911,7 @@ ValuedAction LEAFOMCP::Search(double timeout) {
             logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
             history_.Truncate(hist_size);
 
-
+        // free all the particles used in this simulation
         model_->Free(leading_particle);
         for (int i = 0; i < particles.size(); i++) 
             model_->Free(particles[i]);
