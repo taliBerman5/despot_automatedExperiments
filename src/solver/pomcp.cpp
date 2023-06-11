@@ -144,8 +144,72 @@ ValuedAction POMCP::Search(double timeout) {
 	return astar;
 }
 
+
+ValuedAction POMCP::simSearch(int num_simulates) {
+    double start_cpu = clock(), start_real = get_time_second();
+
+    if (root_ == NULL) {
+        State* state = belief_->Sample(1)[0];
+        root_ = CreateVNode(0, state, prior_, model_);
+        model_->Free(state);
+    }
+
+    int hist_size = history_.Size();
+    bool done = false;
+    int num_sims = 0;
+    while (true) {
+        vector<State*> particles = belief_->Sample(1000);
+        for (int i = 0; i < particles.size(); i++) {
+            State* particle = particles[i];
+            logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
+
+            if(Globals::config.geometric_search_depth) //sets the search depth according to a sample from geometric distribution
+                search_depth_ = geo_(generator_);
+
+            simulate_(particle, root_, model_, prior_, search_depth_, leaf_heuristic_);
+
+            num_sims++;
+            logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
+            history_.Truncate(hist_size);
+
+            if (num_sims >= num_simulates) {
+                done = true;
+                break;
+            }
+        }
+
+        for (int i = 0; i < particles.size(); i++) {
+            model_->Free(particles[i]);
+        }
+
+        if (done)
+            break;
+    }
+
+    ValuedAction astar = OptimalAction(root_);
+
+    logi << "[POMCP::Search] Search statistics" << endl
+         << "OptimalAction = " << astar << endl
+         << "# Simulations = " << root_->count() << endl
+         << "Time: CPU / Real = " << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / " << (get_time_second() - start_real) << endl
+         << "# active particles = " << model_->NumActiveParticles() << endl
+         << "Tree size = " << root_->Size() << endl;
+
+    if (astar.action == -1) {
+        for (ACT_TYPE action = 0; action < model_->NumActions(); action++) {
+            cout << "action " << action << ": " << root_->Child(action)->count()
+                 << " " << root_->Child(action)->value() << endl;
+        }
+    }
+
+    // delete root_;
+    return astar;
+}
+
 ValuedAction POMCP::Search() {
-	return Search(Globals::config.time_per_move);
+    if (Globals::config.num_simulates != -1)
+        return simSearch(Globals::config.num_simulates); //stop condition is amount of simulates
+	return Search(Globals::config.time_per_move); //stop condition is time passed
 }
 
 void POMCP::belief(Belief* b) {
@@ -406,11 +470,16 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
 	return reward;
 }
 
+
+/* The action is detriment by the leader
+ * the action is performed on the leader and each of the followers.
+ * The followers are force to be on the same observation as the leader
+ * The followers are weighted according to the observation probability in the follower and the leader*/
 vector<double> POMCP::Simulate(State *leading_particle, vector<State *> &particles, VNode *vnode, const DSPOMDP *model,
                        POMCPPrior *prior, int search_depth,
                        vector<double> (*leaf_heuristic)(State *, vector<State *> &, int, const DSPOMDP *, POMCPPrior *, int)) {
 
-    vector<double> Reward(particles.size() + 1, 0.0);
+    vector<double> Reward(particles.size() + 1, 0.0);  //initiation, holds the immediate reward + simulated reward  of the leader and followers
     assert(vnode != NULL);
     if (vnode->depth() >= search_depth)
         return Reward;
@@ -419,17 +488,19 @@ vector<double> POMCP::Simulate(State *leading_particle, vector<State *> &particl
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
 
-    vector<double> Weight(particles.size() + 1, 0.0);
+    vector<double> Weight(particles.size() + 1, 0.0); //initiation, holds the weight of the leader and followers
 //    double reward;
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
 
+    // leader
     bool terminal = model->Step(*leading_particle, action, Reward[0], leader_obs);
     Weight[0] = leading_particle->weight; // keep the current weight of the leader (the leader weight is 1)
     leaderObsWeight = model->ObsProb(leader_obs, *leading_particle, action);
 
-    for (int i = 0; i < particles.size(); i++) { // sample the next state for each of the followers
+    //followers
+    for (int i = 0; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
         model->Step(*follower, action, Reward[i+1], obs);
@@ -645,17 +716,16 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 }
 
 // static
+/* run a rollout for the leader and each follower */
 vector<double> POMCP::Rollout(State* leading_particle, vector<State *> &particles, int depth, const DSPOMDP* model,
                       POMCPPrior* prior, int search_depth) {
     vector<double> Reward(particles.size() + 1);
     Reward[0] = Rollout(leading_particle, depth, model, prior, search_depth); //perform a rollout starting from the leader
 
-
     for (int i = 0; i < particles.size(); i++) { //perform a rollout starting from a follower
         State* particle = particles[i];
         Reward[i+1] = Rollout(particle, depth, model, prior, search_depth);
     }
-
     return Reward ;
 }
 
@@ -664,6 +734,8 @@ double POMCP::Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
     return model->Sarsop_state_value(particle);
 }
 
+
+/*get SARSOP value for the leader and each follower */
 vector<double> POMCP::Sarsop_heuristic(State* leading_particle, vector<State *> &particles, int depth, const DSPOMDP* model,
                                POMCPPrior* prior, int search_depth){
     vector<double> Reward(particles.size() + 1);
@@ -680,6 +752,8 @@ double POMCP::Value_iteration_heuristic(State* particle, int depth, const DSPOMD
     return model->VI_state_value(particle);
 }
 
+
+/* get VI value for the leader and each follower */
 vector<double> POMCP::Value_iteration_heuristic(State* leading_particle, vector<State *> &particles, int depth, const DSPOMDP* model,
                                         POMCPPrior* prior, int search_depth){
     vector<double> Reward(particles.size() + 1);
@@ -760,7 +834,10 @@ DPOMCP::DPOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief) :
 	POMCP(model, prior, belief) {
 	reuse_ = false;
 
-    //set simulate function
+    /*set simulate function, two options -
+      1. default Simulate function
+      2. Check_default_policy_Simulate - builds a tree with depth one.
+    */
     double (*simulate_func)(State*, RandomStreams&, VNode*, const DSPOMDP*,
                             POMCPPrior*, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int)) = Simulate;
     double (*Check_default_policy_Simulate_func)(State*, RandomStreams& streams, VNode*, const DSPOMDP*,
@@ -863,14 +940,21 @@ LEAFOMCP::LEAFOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
     POMCP(model, prior, belief) {
     reuse_ = false;
 
-    //set simulate function
+    /*set simulate function, two options -
+      1. default Simulate function
+      2. Check_default_policy_Simulate - builds a tree with depth one.
+    */
     vector<double> (*simulate_func)(State*, vector<State*>&, VNode*, const DSPOMDP*,
                             POMCPPrior*, int, vector<double> (*leaf_heuristic)(State*, vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Simulate;
     vector<double> (*Check_default_policy_Simulate_func)(State*, vector<State*>&, VNode*, const DSPOMDP*,
                                                  POMCPPrior*, int, vector<double> (*leaf_heuristic)(State*, vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Check_default_policy_Simulate;
     simulate_ = Globals::config.check_default_policy ? Check_default_policy_Simulate_func : simulate_func;
 
-    //set leaf_heuristic function
+    /*set leaf_heuristic function, three options -
+      1. Rollout - follows the default policy till sim_depth or reaching terminal state
+      2. VI - value iteration value of the leaf state
+      3. SARSOP - sarsop value of the leaf state
+    */
     vector<double>  (*rolloutFunc)(State*, vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Rollout;
     vector<double>  (*sarsopFunc)(State*, vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Sarsop_heuristic;
     vector<double>  (*viFunc)(State*, vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Value_iteration_heuristic;
@@ -884,6 +968,11 @@ void LEAFOMCP::belief(Belief* b) {
     prior_->PopAll();
 }
 
+
+/* Search for the best action.
+  runs simulates until the time for the search phase is over
+  each simulate K particles are sampled from the belief,
+  one of the K particles is determined to be the leader and the rest are the followers*/
 ValuedAction LEAFOMCP::Search(double timeout) {
     double start_cpu = clock(), start_real = get_time_second();
 
@@ -919,6 +1008,60 @@ ValuedAction LEAFOMCP::Search(double timeout) {
 
         if ((clock() - start_cpu) / CLOCKS_PER_SEC >= timeout)
             break;
+    }
+
+    logi << "[LEAFOMCP::Search] Time: CPU / Real = "
+         << ((clock() - start_cpu) / CLOCKS_PER_SEC) << " / "
+         << (get_time_second() - start_real) << endl << "Tree size = "
+         << root_->Size() << endl;
+
+    ValuedAction astar = OptimalAction(root_);
+    if (astar.action == -1) {
+        for (ACT_TYPE action = 0; action < model_->NumActions(); action++) {
+            cout << "action " << action << ": " << root_->Child(action)->count()
+                 << " " << root_->Child(action)->value() << endl;
+        }
+    }
+
+    delete root_;
+    root_ = NULL;
+    return astar;
+}
+
+
+/* Search for the best action.
+  runs num_simulates simulates
+  each simulate K particles are sampled from the belief,
+  one of the K particles is determined to be the leader and the rest are the followers*/
+ValuedAction LEAFOMCP::simSearch(int num_simulates) {
+    double start_cpu = clock(), start_real = get_time_second();
+
+    if (root_ == NULL) {
+        State* state = belief_->Sample(1)[0];
+        root_ = CreateVNode(0, state, prior_, model_);
+        model_->Free(state);
+    }
+
+    int hist_size = history_.Size();
+    for (int num_sims=0; num_sims< num_simulates; num_sims++) {
+        vector<State*> particles = belief_->Sample(Globals::config.num_scenarios, 1.0); // Sample K particles
+        State* leading_particle = particles.back(); //choose the leader and remove it from the followers
+        particles.pop_back();
+
+        logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
+
+        if(Globals::config.geometric_search_depth) //sets the search depth according to a sample from geometric distribution
+            search_depth_ = geo_(generator_);
+
+        simulate_(leading_particle, particles, root_, model_, prior_, search_depth_, leaf_heuristic_);
+
+        logd << "[POMCP::Search] " << num_sims << " simulations done" << endl;
+        history_.Truncate(hist_size);
+
+        // free all the particles used in this simulation
+        model_->Free(leading_particle);
+        for (int i = 0; i < particles.size(); i++)
+            model_->Free(particles[i]);
     }
 
     logi << "[LEAFOMCP::Search] Time: CPU / Real = "

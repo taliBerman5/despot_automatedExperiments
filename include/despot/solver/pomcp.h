@@ -102,6 +102,7 @@ public:
 	POMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
 	virtual ValuedAction Search();
 	virtual ValuedAction Search(double timeout);
+    virtual ValuedAction simSearch(int num_simulates);
 
 	void reuse(bool r);
 	virtual void belief(Belief* b);
@@ -150,6 +151,7 @@ public:
     Check_default_policy_Simulate(State *leading_particle, std::vector<State *> &particles, VNode *vnode,
                                          const DSPOMDP *model, POMCPPrior *prior, int search_depth,
                                         std::vector<double>  (*leaf_heuristic)(State *, std::vector<State*>&, int, const DSPOMDP *, POMCPPrior *, int));
+
 };
 
 /* =============================================================================
@@ -189,6 +191,7 @@ public:
     LEAFOMCP(const DSPOMDP* model, POMCPPrior* prior, Belief* belief = NULL);
 
     virtual ValuedAction Search(double timeout);
+    virtual ValuedAction simSearch(int num_simulates);
     virtual void belief(Belief* b);
     virtual void BeliefUpdate(ACT_TYPE action, OBS_TYPE obs);
 };

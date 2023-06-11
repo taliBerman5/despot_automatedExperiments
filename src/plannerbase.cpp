@@ -101,6 +101,9 @@ option::Descriptor* BuildUsage(string lower_bounds_str,
                       { E_UNSUCCESSFUL_REWARD, 0, "",
                       "unsuccessful_reward", option::Arg::Required,
                       "  \t--unsuccessful_reward <arg>  \tset unsuccessful action reward." },
+              { E_NUM_SIMULATES, 0, "",
+                      "num_simulates", option::Arg::Required,
+                      "  \t--num_simulates <arg>  \tset number of simulates in search phase." },
                       { E_CHECK_DEFAULT_POLICY, 0, "",
                       "check_default_policy", option::Arg::None,
                       "  \t--check_default_policy  \tcheck_default_policy - in POMCP runs one length simulate and the rest heuristic_leaf." },
@@ -338,6 +341,9 @@ void PlannerBase::OptionParse(option::Option *options, int &num_runs,
     if (options[E_UNSUCCESSFUL_REWARD])
         Globals::config.unsuccessful_reward = atof(options[E_UNSUCCESSFUL_REWARD].arg);
 
+    if (options[E_NUM_SIMULATES])
+        Globals::config.num_simulates = atoi(options[E_NUM_SIMULATES].arg);
+
     if (options[E_CHECK_DEFAULT_POLICY])
         Globals::config.check_default_policy = true;
 
@@ -364,6 +370,7 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 
 	string lbtype = options[E_LBTYPE] ? options[E_LBTYPE].arg : "DEFAULT";
 	string ubtype = options[E_UBTYPE] ? options[E_UBTYPE].arg : "DEFAULT";
+
 //    string unsuccessful_reward  = Globals::config.unsuccessful_reward == -1e10 ? "default" : to_string(Globals::config.unsuccessful_reward );
 	default_out<< "Model = " << typeid(*model).name() << endl
 	<< "Random root seed = " << Globals::config.root_seed << endl
@@ -375,6 +382,7 @@ void PlannerBase::DisplayParameters(option::Option *options, DSPOMDP *model, str
 	<< endl
 	<< "Search time per step = " << Globals::config.time_per_move
 	<< endl
+    << "Amount of simulates per step = " << Globals::config.num_simulates << endl
 	<< "Regularization constant = "
 	<< Globals::config.pruning_constant << endl
 	<< "Lower bound = " << lbtype << endl
