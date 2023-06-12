@@ -35,7 +35,7 @@ $DIR/$@ | awk \
  /^Solver/ {solver=$3}
  /^Search depth/ {depth=$4}
  /^Discount/ {discount_factor=$3}
- /^Amount of simulation/ {simulation_per_step=$7}
+ /^Amount of simulates/ {simulation_per_step=$7}
  /^Number of scenarios/ {nparticles=$5}
  /^Geometric/ {geometric_search_depth=$5}
  /^Simulation steps/ {steps=$4}
