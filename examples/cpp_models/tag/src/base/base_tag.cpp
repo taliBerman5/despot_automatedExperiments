@@ -290,22 +290,39 @@ public:
 			legal_actions_.push_back(a);
 		}
 
-		if (history_.Size() != 0) {
-			if (history_.LastObservation() == tag_model_->same_loc_obs_) {
-				preferred_actions_.push_back(tag_model_->TagAction());
-			} else {
-				if (tag_model_->robot_pos_unknown_) {
-					for (int a = 0; a < 4; a++) {
-						if (tag_model_->floor_.Inside(
-							rob + Compass::DIRECTIONS[a])) {
-							if (!Compass::Opposite(a, history_.LastAction()))
-								preferred_actions_.push_back(a);
-						}
-					}
-				}
-			}
-		}
-	}
+        if (tag_model_->StateIndexToRobIndex(state.state_id) == tag_model_->StateIndexToOppIndex(state.state_id))
+            preferred_actions_.push_back(tag_model_->TagAction());
+		else{
+            if (history_.Size() != 0 && !tag_model_->robot_pos_unknown_)  {
+                        for (int a = 0; a < 4; a++) {
+                            if (tag_model_->floor_.Inside(
+                                    rob + Compass::DIRECTIONS[a])) {
+                                if (!Compass::Opposite(a, history_.LastAction()))
+                                    preferred_actions_.push_back(a);
+                            }
+                        }
+                    }
+
+            }
+        }
+
+
+//		if (history_.Size() != 0) {
+//			if (history_.LastObservation() == tag_model_->same_loc_obs_) {
+//				preferred_actions_.push_back(tag_model_->TagAction());
+//			} else {
+//				if (tag_model_->robot_pos_unknown_) {
+//					for (int a = 0; a < 4; a++) {
+//						if (tag_model_->floor_.Inside(
+//							rob + Compass::DIRECTIONS[a])) {
+//							if (!Compass::Opposite(a, history_.LastAction()))
+//								preferred_actions_.push_back(a);
+//						}
+//					}
+//				}
+//			}
+//		}
+
 };
 
 /* ==============================================================================

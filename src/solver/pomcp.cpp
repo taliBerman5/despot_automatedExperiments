@@ -518,7 +518,7 @@ vector<double> POMCP::Simulate(vector<State *> &particles, VNode *vnode, const D
             //for each immediate reward (leader and each follower) add the reward from the recursive simulate multiplied by the discount factor - R + gamma * Simulate(particle)
             transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
 
-        } else { // Rollout upon encountering a node not in curren tree, then add the node
+        } else { // Rollout upon encountering a node not in current tree, then add the node
             vnodes[leader_obs] = CreateVNode(vnode->depth() + 1, particles[0], prior,
                                              model);
             vector <double> leafReward = leaf_heuristic(particles, vnode->depth() + 1, model, prior, search_depth);

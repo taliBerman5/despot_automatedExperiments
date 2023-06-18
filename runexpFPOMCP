@@ -3,7 +3,7 @@
 DIR="examples/cpp_models"   # Domain directory
 LOG=/dev/stdout             # Log file output
 REWIND=false
-NUMRUN=50
+NUMRUN=100
 NOOBSTAG="-l tag_noOppObs_LEAFOMCP.log tag/noobstag"
 ROCKSAMPLE="-l rock_sample_LEAFOMCP.log rock_sample/rock_sample"
 SIZE=7
@@ -14,16 +14,19 @@ make -C $DIR/tag
 make -C $DIR/rock_sample
 
 
-
-
-for i in 10  20 90
+for k in 2 3 4 5 6 7 8 9 10 11
 do
-  echo "started " $i
+  bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth 20 --unsuccessful_reward -2 --num_simulates 10000 --nparticles $k
+done
 
-  for j in -1 -2 -10
-  do
-    echo "started " $j
-    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles 20
+#for i in 10  20 90
+#do
+#  echo "started " $i
+#
+#  for j in -1 -2 -10
+#  do
+#    echo "started " $j
+#    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles 20
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver POMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles -1
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
@@ -35,12 +38,12 @@ do
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j --discount 0.7
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
 #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
-  done
-
-  for j in -2 -5 -10
-    do
-      echo "started " $j
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles 20
+#  done
+#
+#  for j in -2 -5 -10
+#    do
+#      echo "started " $j
+#      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles 20
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver POMCP --depth $i --unsuccessful_reward $j --num_simulates 50000 --nparticles -1
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic SARSOP --unsuccessful_reward $j
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --leaf_heuristic VI --unsuccessful_reward $j
@@ -53,8 +56,8 @@ do
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --check_default_policy --unsuccessful_reward $j --discount 0.7
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --size $SIZE --number $NUMBER --solver LEAFOMCP --depth $i --geometric_search_depth --unsuccessful_reward $j --discount 0.7
 
-    done
-done
+#    done
+#done
 
 
 
