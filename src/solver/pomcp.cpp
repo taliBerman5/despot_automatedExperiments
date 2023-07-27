@@ -1,5 +1,6 @@
 #include <despot/solver/pomcp.h>
 #include <despot/util/logging.h>
+#include <set>
 
 using namespace std;
 
@@ -719,11 +720,31 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 /* run a rollout for the leader and each follower */
 vector<double> POMCP::Rollout(vector<State *> &particles, int depth, const DSPOMDP* model,
                       POMCPPrior* prior, int search_depth) {
+
+    vector<int> states(particles.size());
+//    std::cout << "Number of unique elements is "
+//              << std::set<double>( v.begin(), v.end() ).size()
+//              << std::endl;
+
     vector<double> Reward(particles.size());
 
-    for (int i = 0; i < particles.size(); i++)  //perform a rollout starting from the leader and each follower
+    for (int i = 0; i < particles.size(); i++) {  //perform a rollout starting from the leader and each follower
         Reward[i] = Rollout(particles[i], depth, model, prior, search_depth);
+        states[i] = particles[i]->state_id;
+    }
 
+    int different_states = std::set<int>( states.begin(), states.end() ).size();
+
+    double sum = std::accumulate(Reward.begin(), Reward.end(), 0.0);
+    double mean = sum / Reward.size();
+
+    double sq_sum = std::inner_product(Reward.begin(), Reward.end(), Reward.begin(), 0.0);
+    double stdev = std::sqrt(sq_sum / Reward.size() - mean * mean);
+
+
+    default_out << "Num of different States = " << different_states << endl
+                << "Mean = " << mean << endl
+                << "STD = " << stdev << endl << endl;
     return Reward ;
 }
 
@@ -754,10 +775,26 @@ double POMCP::Value_iteration_heuristic(State* particle, int depth, const DSPOMD
 vector<double> POMCP::Value_iteration_heuristic(vector<State *> &particles, int depth, const DSPOMDP* model,
                                         POMCPPrior* prior, int search_depth){
     vector<double> Reward(particles.size());
+//    vector<int> states(particles.size());
 
-    for(int i=0; i < particles.size(); i++)
+
+        for(int i=0; i < particles.size(); i++){
         Reward[i] = model->VI_state_value(particles[i]);
+//        states[i] = particles[i]->state_id;
+    }
 
+//        int different_states = std::set<int>( states.begin(), states.end() ).size();
+//
+//        double sum = std::accumulate(Reward.begin(), Reward.end(), 0.0);
+//        double mean = sum / Reward.size();
+//
+//        double sq_sum = std::inner_product(Reward.begin(), Reward.end(), Reward.begin(), 0.0);
+//        double stdev = std::sqrt(sq_sum / Reward.size() - mean * mean);
+//
+//
+//        default_out << "Num of different States = " << different_states << endl
+//                    << "Mean = " << mean << endl
+//                    << "STD = " << stdev << endl << endl;
     return Reward;
 }
 
@@ -1038,6 +1075,17 @@ ValuedAction LEAFOMCP::simSearch(int num_simulates) {
     int hist_size = history_.Size();
     for (int num_sims=0; num_sims< num_simulates; num_sims++) {
         vector<State*> particles = belief_->Sample(Globals::config.num_scenarios, 1.0); // Sample K particles
+
+        vector<int> states(particles.size());
+
+
+        for(int i=0; i < particles.size(); i++)
+            states[i] = particles[i]->state_id;
+
+
+        int different_states = std::set<int>( states.begin(), states.end() ).size();
+
+        cout << different_states << endl;
 
         logd << "[POMCP::Search] Starting simulation " << num_sims << endl;
 
