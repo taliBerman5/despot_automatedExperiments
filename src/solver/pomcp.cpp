@@ -476,21 +476,20 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
  * the action is performed on the leader and each of the followers.
  * The followers are force to be on the same observation as the leader
  * The followers are weighted according to the observation probability in the follower and the leader*/
-tuple<vector<double>, vector<double>> POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *model,
+vector<double> POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *model,
                        POMCPPrior *prior, int search_depth,
                        vector<double> (*leaf_heuristic)(vector<State *> &, int, const DSPOMDP *, POMCPPrior *, int)) {
 
     vector<double> Reward(particles.size(), 0.0);  //initiation, holds the immediate reward + simulated reward  of the leader and followers
-    vector<double> Weight(particles.size(), 1.0); //initiation, holds the weight of the leader and followers
-        assert(vnode != NULL);
-        if (vnode->depth() >= search_depth) {
-        return make_tuple(Reward, Weight);
-    }
+    assert(vnode != NULL);
+    if (vnode->depth() >= search_depth)
+        return Reward;
 
-        double explore_constant = prior->exploration_constant();
+    double explore_constant = prior->exploration_constant();
 
-        ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
+    ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
 
+    vector<double> Weight(particles.size(), 0.0); //initiation, holds the weight of the leader and followers
 //    double reward;
     OBS_TYPE leader_obs;
     double leaderObsWeight;
@@ -498,7 +497,7 @@ tuple<vector<double>, vector<double>> POMCP::Simulate(vector<State *> &particles
 
     // leader
     bool terminal = model->Step(*particles[0], action, Reward[0], leader_obs);
-//    Weight[0] = particles[0]->weight; // keep the current weight of the leader (the leader weight is 1)
+    Weight[0] = particles[0]->weight; // keep the current weight of the leader (the leader weight is 1)
     leaderObsWeight = model->ObsProb(leader_obs, *particles[0], action);
 
     //followers
@@ -506,8 +505,9 @@ tuple<vector<double>, vector<double>> POMCP::Simulate(vector<State *> &particles
         State* follower = particles[i];
         OBS_TYPE obs;
         model->Step(*follower, action, Reward[i], obs);
+        Weight[i] = follower->weight; // keep the current weight of the follower
         followerObsWeight = model->ObsProb(leader_obs, *follower, action); // probability of getting the leader observation in the follower state
-        Weight[i] = followerObsWeight / leaderObsWeight; // keep the current weight of the follower
+        follower->weight = follower->weight * (followerObsWeight / leaderObsWeight); //update the follower weight
     }
 
     QNode* qnode = vnode->Child(action);
@@ -515,13 +515,9 @@ tuple<vector<double>, vector<double>> POMCP::Simulate(vector<State *> &particles
         prior->Add(action, leader_obs);
         map<OBS_TYPE, VNode*>& vnodes = qnode->children();
         if (vnodes[leader_obs] != NULL) {
-            std::tuple<vector<double>, vector<double>> RW_tuple = Simulate(particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
-            vector <double> simReward = get<0>(RW_tuple);
-            vector <double> simWeight = get<1>(RW_tuple);
+            vector <double> simReward = Simulate(particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
             //for each immediate reward (leader and each follower) add the reward from the recursive simulate multiplied by the discount factor - R + gamma * Simulate(particle)
             transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
-            //for each current weight (leader and each follower) add the weight from the recursive simulate
-            transform(simWeight.begin(), simWeight.end(), Weight.begin(), Weight.begin(), [](double x, double y) { return x * y; });
 
         } else { // Rollout upon encountering a node not in current tree, then add the node
             vnodes[leader_obs] = CreateVNode(vnode->depth() + 1, particles[0], prior,
@@ -544,7 +540,7 @@ tuple<vector<double>, vector<double>> POMCP::Simulate(vector<State *> &particles
 //    qnode->Add(reward);
 //    vnode->Add(reward);
 
-    return make_tuple(Reward, Weight);
+    return Reward;
 }
 
 
@@ -617,36 +613,35 @@ double POMCP::Check_default_policy_Simulate(State* particle, RandomStreams& stre
     return reward;
 }
 
-tuple<vector<double>, vector<double>> POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vnode, const DSPOMDP* model,
+vector<double> POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vnode, const DSPOMDP* model,
                                             POMCPPrior* prior, int search_depth, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) {
 
     vector<double> Reward(particles.size(), 0.0);
-    vector<double> Weight(particles.size(), 1.0);
-
     assert(vnode != NULL);
-    if (vnode->depth() >= search_depth) {
-        return make_tuple(Reward, Weight);
-    }
+    if (vnode->depth() >= search_depth)
+        return Reward;
 
     double explore_constant = prior->exploration_constant();
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
 
+    vector<double> Weight(particles.size(), 0.0);
     double reward;
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
 
     bool terminal = model->Step(*particles[0], action, Reward[0], leader_obs);
-//    Weight[0] = particles[0]->weight;
+    Weight[0] = particles[0]->weight;
     leaderObsWeight = model->ObsProb(leader_obs, *particles[0], action);
 
     for (int i = 1; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
         model->Step(*follower, action, Reward[i], obs);
+        Weight[i] = follower->weight;
         followerObsWeight = model->ObsProb(leader_obs, *follower, action);
-        Weight[i] = followerObsWeight / leaderObsWeight;
+        follower->weight = follower->weight * (followerObsWeight / leaderObsWeight);
     }
 
     QNode* qnode = vnode->Child(action);
@@ -663,8 +658,11 @@ tuple<vector<double>, vector<double>> POMCP::Check_default_policy_Simulate(vecto
         qnode->Add(Reward[i], Weight[i]);
         vnode->Add(Reward[i], Weight[i]);
     }
+//    reward = inner_product(Reward.begin(), Reward.end(), Weight.begin(), 0.0);
+//    qnode->Add(reward);
+//    vnode->Add(reward);
 
-    return make_tuple(Reward, Weight);
+    return Reward;
 }
 
 // static
@@ -723,7 +721,7 @@ double POMCP::Rollout(State* particle, int depth, const DSPOMDP* model,
 vector<double> POMCP::Rollout(vector<State *> &particles, int depth, const DSPOMDP* model,
                       POMCPPrior* prior, int search_depth) {
 
-//    vector<int> states(particles.size());
+    vector<int> states(particles.size());
 //    std::cout << "Number of unique elements is "
 //              << std::set<double>( v.begin(), v.end() ).size()
 //              << std::endl;
@@ -732,21 +730,21 @@ vector<double> POMCP::Rollout(vector<State *> &particles, int depth, const DSPOM
 
     for (int i = 0; i < particles.size(); i++) {  //perform a rollout starting from the leader and each follower
         Reward[i] = Rollout(particles[i], depth, model, prior, search_depth);
-//        states[i] = particles[i]->state_id;
+        states[i] = particles[i]->state_id;
     }
 
-//    int different_states = std::set<int>( states.begin(), states.end() ).size();
-//
-//    double sum = std::accumulate(Reward.begin(), Reward.end(), 0.0);
-//    double mean = sum / Reward.size();
-//
-//    double sq_sum = std::inner_product(Reward.begin(), Reward.end(), Reward.begin(), 0.0);
-//    double stdev = std::sqrt(sq_sum / Reward.size() - mean * mean);
-//
-//
-//    default_out << "Num of different States = " << different_states << endl
-//                << "Mean = " << mean << endl
-//                << "STD = " << stdev << endl << endl;
+    int different_states = std::set<int>( states.begin(), states.end() ).size();
+
+    double sum = std::accumulate(Reward.begin(), Reward.end(), 0.0);
+    double mean = sum / Reward.size();
+
+    double sq_sum = std::inner_product(Reward.begin(), Reward.end(), Reward.begin(), 0.0);
+    double stdev = std::sqrt(sq_sum / Reward.size() - mean * mean);
+
+
+    default_out << "Num of different States = " << different_states << endl
+                << "Mean = " << mean << endl
+                << "STD = " << stdev << endl << endl;
     return Reward ;
 }
 
@@ -979,9 +977,9 @@ LEAFOMCP::LEAFOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
       1. default Simulate function
       2. Check_default_policy_Simulate - builds a tree with depth one.
     */
-    tuple<vector<double>,vector<double>> (*simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
+    vector<double> (*simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
                             POMCPPrior*, int, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Simulate;
-    tuple<vector<double>,vector<double>> (*Check_default_policy_Simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
+    vector<double> (*Check_default_policy_Simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
                                                  POMCPPrior*, int, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Check_default_policy_Simulate;
     simulate_ = Globals::config.check_default_policy ? Check_default_policy_Simulate_func : simulate_func;
 

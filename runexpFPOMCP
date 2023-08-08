@@ -20,7 +20,7 @@ do
     for k in 1 2 3 4 5 6 7 8 9 10 11
     do
   #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward -2 --num_simulates 10000 --nparticles $k --leaf_heuristic VI
-#      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
+      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
       bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k
     done
   done
