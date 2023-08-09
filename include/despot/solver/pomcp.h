@@ -114,7 +114,7 @@ public:
                            POMCPPrior* prior, int search_depth, double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int));
 	static double Simulate(State* particle, RandomStreams& streams,
 		VNode* vnode, const DSPOMDP* model, POMCPPrior* prior,  double (*leaf_heuristic)(State*, int, const DSPOMDP*, POMCPPrior*, int));
-    static std::vector<double> Simulate(std::vector<State*>& particles,
+    static double Simulate(std::vector<State*>& particles,
                            VNode* vnode, const DSPOMDP* model, POMCPPrior* prior, int search_depth, std::vector<double> (*leaf_heuristic)(std::vector<State *> &,  int, const DSPOMDP*, POMCPPrior*, int));
     static double Simulate(State* particle, RandomStreams& streams,
                            VNode* vnode, const DSPOMDP* model, POMCPPrior* prior);
@@ -147,11 +147,11 @@ public:
                                   double (*leaf_heuristic)(State *, int, const DSPOMDP *, POMCPPrior *, int));
 
 
-    static std::vector<double>
+    static double
     Check_default_policy_Simulate(std::vector<State *> &particles, VNode *vnode,
                                          const DSPOMDP *model, POMCPPrior *prior, int search_depth,
                                         std::vector<double>  (*leaf_heuristic)(std::vector<State*>&, int, const DSPOMDP *, POMCPPrior *, int));
-
+    static std::vector<double> normalize(std::vector<double> v);
 };
 
 /* =============================================================================
@@ -183,7 +183,7 @@ public:
 
 class LEAFOMCP: public POMCP {
 protected:
-    std::vector<double> (*simulate_)(std::vector<State*>&, VNode*, const DSPOMDP*,
+    double (*simulate_)(std::vector<State*>&, VNode*, const DSPOMDP*,
                         POMCPPrior*, int, std::vector<double> (std::vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int));
     std::vector<double> (*leaf_heuristic_)(std::vector<State*>&, int, const DSPOMDP*,
                               POMCPPrior*, int);
