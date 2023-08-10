@@ -505,16 +505,17 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
     for (int i = 1; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
-        model->Step(*follower, action, immediateReward[i], obs);
         Weight[i] = follower->weight; // keep the current weight of the follower
+        model->Step(*follower, action, immediateReward[i], obs);
         followerObsWeight = model->ObsProb(leader_obs, *follower, action); // probability of getting the leader observation in the follower state
         follower->weight = follower->weight * (followerObsWeight / leaderObsWeight); //update the follower weight
-        nextWeight[i] = follower->weight;
+        nextWeight[i] = follower->weight; // keep the weight of the follower after the step
     }
-
+    // Normalize the weights to 1
     Weight = normalize(Weight);
     nextWeight = normalize(nextWeight);
 
+    // The particle filter reward - b(s) * R
     double reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
 
     QNode* qnode = vnode->Child(action);
@@ -528,6 +529,7 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
             vnodes[leader_obs] = CreateVNode(vnode->depth() + 1, particles[0], prior,
                                              model);
             vector<double> leafReward = leaf_heuristic(particles, vnode->depth() + 1, model, prior, search_depth);
+            // The particle filter leaf reward - b(s_next) * leafReward
             double leaf_reward = inner_product(leafReward.begin(), leafReward.end(), nextWeight.begin(), 0.0);
             reward += Globals::Discount() * leaf_reward;
 
@@ -541,7 +543,7 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
     return reward;
 }
 
-
+// Normalize the vector `v` to 1
 vector<double> POMCP::normalize(vector<double> v){
     double divisor = accumulate(v.begin(), v.end(), 0.0);
     std::transform(v.begin(), v.end(), v.begin(),
