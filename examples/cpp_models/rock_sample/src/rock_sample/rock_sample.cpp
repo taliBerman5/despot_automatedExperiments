@@ -10,16 +10,16 @@ namespace despot {
 
 RockSample::RockSample(string map) :
 	BaseRockSample(map) {
-//    	half_efficiency_distance_ = 20;
-	half_efficiency_distance_ = 2;
+    	half_efficiency_distance_ = 20;
+//	half_efficiency_distance_ = 2;
     InitializeTransitions();  //TODO: make sure this is correct
     init_state_value();
 }
 
 RockSample::RockSample(int size, int rocks) :
 	BaseRockSample(size, rocks) {
-//	half_efficiency_distance_ = 20;
-	half_efficiency_distance_ = 2;  //TODO: made the observations more noisy
+	half_efficiency_distance_ = 20;
+//	half_efficiency_distance_ = 2;  //TODO: made the observations more noisy
     InitializeTransitions();
     init_state_value();
     CreateSARSOPTransitions();
@@ -28,8 +28,8 @@ RockSample::RockSample(int size, int rocks) :
 RockSample::RockSample(int size, int rocks, double unsuccessful_sample_reward) :
         BaseRockSample(size, rocks) {
     BaseRockSample::UNSUCCESSFUL_SAMPLE_REWARD = unsuccessful_sample_reward;
-//    	half_efficiency_distance_ = 20;
-    half_efficiency_distance_ = 2;
+    	half_efficiency_distance_ = 20;
+//    half_efficiency_distance_ = 2;
     InitializeTransitions();
     init_state_value();
     CreateSARSOPTransitions();
