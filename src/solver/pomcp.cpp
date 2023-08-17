@@ -334,12 +334,12 @@ VNode* POMCP::CreateVNode(int depth, const State* state, POMCPPrior* prior,
 			qnode->value(0);
 		}
 
-		for (int a = 0; a < preferred_actions.size(); a++) {
-			ACT_TYPE action = preferred_actions[a];
-			QNode* qnode = vnode->Child(action);
-			qnode->count(prior->SmartCount(action));
-			qnode->value(prior->SmartValue(action));
-		}
+//		for (int a = 0; a < preferred_actions.size(); a++) {
+//			ACT_TYPE action = preferred_actions[a];
+//			QNode* qnode = vnode->Child(action);
+//			qnode->count(prior->SmartCount(action));
+//			qnode->value(prior->SmartValue(action));
+//		}
 	}
 
 	return vnode;
@@ -487,8 +487,12 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
         }
 
     double explore_constant = prior->exploration_constant();
+//    double explore_constant = 100; //prior->exploration_constant();
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
+    if (action > 5){
+        int a = 7;
+    }
     vector<double> immediateReward(particles.size(), 0.0);  //initiation, holds the immediate reward
     vector<double> Weight(particles.size(), 1.0); //initiation, holds the weight of the leader and followers
     vector<double> nextWeight(particles.size(), 1.0); //initiation, holds the weight after the step of the leader and followers
@@ -512,12 +516,12 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
         nextWeight[i] = follower->weight; // keep the weight of the follower after the step
     }
     // Normalize the weights to 1
-    Weight = normalize(Weight);
-    nextWeight = normalize(nextWeight);
+//    Weight = normalize(Weight);
+//    nextWeight = normalize(nextWeight);
 
     // The particle filter reward - b(s) * R
     double reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
-
+    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
     QNode* qnode = vnode->Child(action);
     if (!terminal) {
         prior->Add(action, leader_obs);
@@ -537,8 +541,8 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
         prior->PopLast();
     }
 
-    qnode->Add(reward);
-    vnode->Add(reward);
+    qnode->Add(reward, weight);
+    vnode->Add(reward, weight);
 
     return reward;
 }
@@ -756,6 +760,41 @@ vector<double> POMCP::Rollout(vector<State *> &particles, int depth, const DSPOM
 //                << "STD = " << stdev << endl << endl;
     return Reward ;
 }
+
+
+
+/* run a rollout for the leader and each follower based on the leader actions */
+vector<double> POMCP::Rollout_Leader(vector<State *> &particles, int depth, const DSPOMDP* model,
+                                  POMCPPrior* prior, int search_depth) {
+
+            vector<double> Reward(particles.size(), 0.0);
+            if (depth >= search_depth) {
+                return Reward;
+            }
+
+            ACT_TYPE action = prior->GetAction(*particles[0]);
+
+            OBS_TYPE leaderObs;
+            OBS_TYPE obs;
+            bool terminal = model->Step(*particles[0], action, Reward[0], leaderObs);
+
+            for (int i = 1; i < particles.size(); i++) {  //perform a rollout starting from the leader and each follower
+                model->Step(*particles[i], action, Reward[i], obs);
+            }
+
+            if (!terminal) {
+                prior->Add(action, leaderObs);
+                vector<double> simReward = Rollout_Leader(particles, depth + 1, model, prior, search_depth);
+
+                //for each immediate reward (leader and each follower) add the reward from the Rollout_Leader multiplied by the discount factor - R + gamma * Rollout_Leader(particle)
+                transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
+                prior->PopLast();
+            }
+
+            return Reward;
+
+
+    }
 
 double POMCP::Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
                                POMCPPrior* prior, int search_depth){
@@ -997,7 +1036,7 @@ LEAFOMCP::LEAFOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
       2. VI - value iteration value of the leaf state
       3. SARSOP - sarsop value of the leaf state
     */
-    vector<double> (*rolloutFunc)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Rollout;
+    vector<double> (*rolloutFunc)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Rollout_Leader;
     vector<double>  (*sarsopFunc)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Sarsop_heuristic;
     vector<double>  (*viFunc)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int) = Value_iteration_heuristic;
     leaf_heuristic_ = Globals::config.leaf_heuristic == "SARSOP" ? sarsopFunc : Globals::config.leaf_heuristic == "VI" ? viFunc : rolloutFunc;

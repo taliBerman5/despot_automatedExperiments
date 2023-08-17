@@ -5,7 +5,7 @@ LOG=/dev/stdout             # Log file output
 REWIND=false
 NUMRUN=100
 NOOBSTAG="-l tag_noOppObs_LEAFOMCP.log tag/noobstag"
-ROCKSAMPLE="-l rock_sample_LEAFOMCP_particleFilter.log rock_sample/rock_sample"
+ROCKSAMPLE="-l rock_sample_LEAFOMCP_particleFilter_noisy_leader_rollout.log rock_sample/rock_sample"
 SIZE=7
 NUMBER=8
 

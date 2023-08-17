@@ -124,6 +124,8 @@ public:
 		const DSPOMDP* model, POMCPPrior* prior);
     static std::vector<double> Rollout(std::vector<State *> &particles, int depth, const DSPOMDP *model,
             POMCPPrior *prior, int search_depth);
+    static std::vector<double> Rollout_Leader(std::vector<State *> &particles, int depth, const DSPOMDP *model,
+                                       POMCPPrior *prior, int search_depth);
     static double Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
                           POMCPPrior* prior, int search_depth);
     static std::vector<double> Sarsop_heuristic(std::vector<State *> &, int depth, const DSPOMDP* model,
