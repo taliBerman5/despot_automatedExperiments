@@ -157,10 +157,21 @@ void VNode::Add(double val) {
 	count_++;
 }
 
+
 void VNode::Add(double val, double weight) {
     value_ = (value_ * count_ + val * weight) / (count_ + weight);
     count_ += weight;
 }
+
+
+
+//void VNode::Add(double val, double weight) {
+//    value_ = (value_ * count_ + val) / (count_ + weight);
+//    count_ += weight;
+//}
+
+
+
 
 void VNode::count(int c) {
 	count_ = c;
@@ -368,6 +379,11 @@ void QNode::Add(double val, double weight) {
     value_ = (value_ * count_ + val * weight) / (count_ + weight);
     count_ += weight;
 }
+
+//void QNode::Add(double val, double weight) {
+//    value_ = (value_ * count_ + val) / (count_ + weight);
+//    count_ += weight;
+//}
 
 void QNode::count(int c) {
 	count_ = c;

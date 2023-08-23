@@ -487,16 +487,13 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
         }
 
     double explore_constant = prior->exploration_constant();
-//    double explore_constant = 100; //prior->exploration_constant();
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
-    if (action > 5){
-        int a = 7;
-    }
+
     vector<double> immediateReward(particles.size(), 0.0);  //initiation, holds the immediate reward
     vector<double> Weight(particles.size(), 1.0); //initiation, holds the weight of the leader and followers
     vector<double> nextWeight(particles.size(), 1.0); //initiation, holds the weight after the step of the leader and followers
-//    double reward;
+
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
@@ -515,13 +512,16 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
         follower->weight = follower->weight * (followerObsWeight / leaderObsWeight); //update the follower weight
         nextWeight[i] = follower->weight; // keep the weight of the follower after the step
     }
+
+    // Accumulate the weight before the normalization
+    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
+
     // Normalize the weights to 1
-//    Weight = normalize(Weight);
-//    nextWeight = normalize(nextWeight);
+    Weight = normalize(Weight);
+    nextWeight = normalize(nextWeight);
 
     // The particle filter reward - b(s) * R
     double reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
-    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
     QNode* qnode = vnode->Child(action);
     if (!terminal) {
         prior->Add(action, leader_obs);
@@ -635,7 +635,7 @@ double POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vno
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
     vector<double> immediateReward(particles.size(), 0.0);
-    vector<double> Weight(particles.size(), 0.0);
+    vector<double> Weight(particles.size(), 1.0);
     vector<double> nextWeight(particles.size(), 1.0); //initiation, holds the weight after the step of the leader and followers
 
     double reward;
@@ -644,7 +644,6 @@ double POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vno
     double followerObsWeight;
 
     bool terminal = model->Step(*particles[0], action, immediateReward[0], leader_obs);
-    Weight[0] = particles[0]->weight;
     leaderObsWeight = model->ObsProb(leader_obs, *particles[0], action);
 
     for (int i = 1; i < particles.size(); i++) {
@@ -658,6 +657,7 @@ double POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vno
     }
 
     reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
+    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
 
     QNode* qnode = vnode->Child(action);
     if (!terminal) {
@@ -672,8 +672,8 @@ double POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vno
 //        qnode->Add(immediateReward[i], Weight[i]);
 //        vnode->Add(immediateReward[i], Weight[i]);
 //    }
-    qnode->Add(reward);
-    vnode->Add(reward);
+    qnode->Add(reward, weight);
+    vnode->Add(reward, weight);
 
     return reward;
 }
@@ -767,34 +767,34 @@ vector<double> POMCP::Rollout(vector<State *> &particles, int depth, const DSPOM
 vector<double> POMCP::Rollout_Leader(vector<State *> &particles, int depth, const DSPOMDP* model,
                                   POMCPPrior* prior, int search_depth) {
 
-            vector<double> Reward(particles.size(), 0.0);
-            if (depth >= search_depth) {
-                return Reward;
-            }
-
-            ACT_TYPE action = prior->GetAction(*particles[0]);
-
-            OBS_TYPE leaderObs;
-            OBS_TYPE obs;
-            bool terminal = model->Step(*particles[0], action, Reward[0], leaderObs);
-
-            for (int i = 1; i < particles.size(); i++) {  //perform a rollout starting from the leader and each follower
-                model->Step(*particles[i], action, Reward[i], obs);
-            }
-
-            if (!terminal) {
-                prior->Add(action, leaderObs);
-                vector<double> simReward = Rollout_Leader(particles, depth + 1, model, prior, search_depth);
-
-                //for each immediate reward (leader and each follower) add the reward from the Rollout_Leader multiplied by the discount factor - R + gamma * Rollout_Leader(particle)
-                transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
-                prior->PopLast();
-            }
-
-            return Reward;
-
-
+    vector<double> Reward(particles.size(), 0.0);
+    if (depth >= search_depth) {
+        return Reward;
     }
+
+    ACT_TYPE action = prior->GetAction(*particles[0]);
+
+    OBS_TYPE leaderObs;
+    OBS_TYPE obs;
+    bool terminal = model->Step(*particles[0], action, Reward[0], leaderObs);
+
+    for (int i = 1; i < particles.size(); i++) {  //perform a rollout starting from the leader and each follower
+        model->Step(*particles[i], action, Reward[i], obs);
+    }
+
+    if (!terminal) {
+        prior->Add(action, leaderObs);
+        vector<double> simReward = Rollout_Leader(particles, depth + 1, model, prior, search_depth);
+
+        //for each immediate reward (leader and each follower) add the reward from the Rollout_Leader multiplied by the discount factor - R + gamma * Rollout_Leader(particle)
+        transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
+        prior->PopLast();
+    }
+
+    return Reward;
+
+
+}
 
 double POMCP::Sarsop_heuristic(State* particle, int depth, const DSPOMDP* model,
                                POMCPPrior* prior, int search_depth){

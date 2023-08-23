@@ -103,7 +103,7 @@ protected:
 	double upper_bound_;
 
 	// For POMCP
-	int count_; // Number of visits on the node
+	double count_; // Number of visits on the node
 	double value_; // Value of the node
 
 public:
