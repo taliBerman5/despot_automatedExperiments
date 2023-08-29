@@ -477,71 +477,67 @@ double POMCP::Simulate(State* particle, VNode* vnode, const DSPOMDP* model,
  * the action is performed on the leader and each of the followers.
  * The followers are force to be on the same observation as the leader
  * The followers are weighted according to the observation probability in the follower and the leader*/
-double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *model,
+vector<double> POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *model,
                        POMCPPrior *prior, int search_depth,
                        vector<double> (*leaf_heuristic)(vector<State *> &, int, const DSPOMDP *, POMCPPrior *, int)) {
 
     assert(vnode != NULL);
+        vector<double> Reward(particles.size(), 0.0);  //initiation, holds the immediate reward + simulated reward  of the leader and followers
         if (vnode->depth() >= search_depth) {
-            return 0;
+            return Reward;
         }
 
     double explore_constant = prior->exploration_constant();
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
 
-    vector<double> immediateReward(particles.size(), 0.0);  //initiation, holds the immediate reward
-    vector<double> Weight(particles.size(), 1.0); //initiation, holds the weight of the leader and followers
-    vector<double> nextWeight(particles.size(), 1.0); //initiation, holds the weight after the step of the leader and followers
 
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
 
     // Leader
-    bool terminal = model->Step(*particles[0], action, immediateReward[0], leader_obs);
+    bool terminal = model->Step(*particles[0], action, Reward[0], leader_obs);
     leaderObsWeight = model->ObsProb(leader_obs, *particles[0], action);
 
     // Followers
     for (int i = 1; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
-        Weight[i] = follower->weight; // keep the current weight of the follower
-        model->Step(*follower, action, immediateReward[i], obs);
+        model->Step(*follower, action, Reward[i], obs);
         followerObsWeight = model->ObsProb(leader_obs, *follower, action); // probability of getting the leader observation in the follower state
         follower->weight = follower->weight * (followerObsWeight / leaderObsWeight); //update the follower weight
-        nextWeight[i] = follower->weight; // keep the weight of the follower after the step
     }
 
-    // Accumulate the weight before the normalization
-    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
-
-
-    // The particle filter reward - b(s) * R
-    double reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
     QNode* qnode = vnode->Child(action);
     if (!terminal) {
         prior->Add(action, leader_obs);
         map<OBS_TYPE, VNode*>& vnodes = qnode->children();
         if (vnodes[leader_obs] != NULL) {
-            reward += Globals::Discount()
-                      * Simulate(particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
+            vector <double> simReward = Simulate(particles, vnodes[leader_obs], model, prior, search_depth, leaf_heuristic);
+            //for each immediate reward (leader and each follower) add the reward from the recursive simulate multiplied by the discount factor - R + gamma * Simulate(particle)
+            transform(simReward.begin(), simReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
+
         } else { // Rollout upon encountering a node not in current tree, then add the node
             vnodes[leader_obs] = CreateVNode(vnode->depth() + 1, particles[0], prior,
                                              model);
-            vector<double> leafReward = leaf_heuristic(particles, vnode->depth() + 1, model, prior, search_depth);
-            // The particle filter leaf reward - b(s_next) * leafReward
-            double leaf_reward = inner_product(leafReward.begin(), leafReward.end(), nextWeight.begin(), 0.0);
-            reward += Globals::Discount() * leaf_reward;
-
+            vector <double> leafReward = leaf_heuristic(particles, vnode->depth() + 1, model, prior, search_depth);
+            //for each immediate reward (leader and each follower) add the reward from the leaf_heuristic multiplied by the discount factor - R + gamma * leaf_heuristic(particle)
+            transform(leafReward.begin(), leafReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
         }
         prior->PopLast();
     }
 
-    qnode->Add(reward, weight);
-    vnode->Add(reward, weight);
+    // update the qnode and vnode count and value with the leader and each follower weight and reward
+    for(int i = 0; i < Reward.size(); i++) {
+        qnode->Add(Reward[i], particles[i]->weight);
+        vnode->Add(Reward[i], particles[i]->weight);
+    }
 
-    return reward;
+//    qnode->Add(reward, weight);
+//    vnode->Add(reward, weight);
+
+    return Reward;
 }
 
 // Normalize the vector `v` to 1
@@ -621,58 +617,51 @@ double POMCP::Check_default_policy_Simulate(State* particle, RandomStreams& stre
     return reward;
 }
 
-double POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vnode, const DSPOMDP* model,
+vector<double> POMCP::Check_default_policy_Simulate(vector<State*>&particles, VNode* vnode, const DSPOMDP* model,
                                             POMCPPrior* prior, int search_depth, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) {
 
     assert(vnode != NULL);
+    vector<double> Reward(particles.size(), 0.0);
+
     if (vnode->depth() >= search_depth)
-        return 0;
+        return Reward;
 
     double explore_constant = prior->exploration_constant();
 
     ACT_TYPE action = UpperBoundAction(vnode, explore_constant);
-    vector<double> immediateReward(particles.size(), 0.0);
-    vector<double> Weight(particles.size(), 1.0);
-    vector<double> nextWeight(particles.size(), 1.0); //initiation, holds the weight after the step of the leader and followers
 
     double reward;
     OBS_TYPE leader_obs;
     double leaderObsWeight;
     double followerObsWeight;
 
-    bool terminal = model->Step(*particles[0], action, immediateReward[0], leader_obs);
+    bool terminal = model->Step(*particles[0], action, Reward[0], leader_obs);
     leaderObsWeight = model->ObsProb(leader_obs, *particles[0], action);
 
     for (int i = 1; i < particles.size(); i++) {
         State* follower = particles[i];
         OBS_TYPE obs;
-        model->Step(*follower, action, immediateReward[i], obs);
-        Weight[i] = follower->weight;
+        model->Step(*follower, action, Reward[i], obs);
         followerObsWeight = model->ObsProb(leader_obs, *follower, action);
         follower->weight = follower->weight * (followerObsWeight / leaderObsWeight);
-        nextWeight[i] = follower->weight;
     }
-
-    reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
-    double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
 
     QNode* qnode = vnode->Child(action);
     if (!terminal) {
         prior->Add(action, leader_obs);
         vector<double> leafReward = leaf_heuristic(particles, vnode->depth() + 1, model, prior, search_depth);
-        double leaf_reward = inner_product(leafReward.begin(), leafReward.end(), nextWeight.begin(), 0.0);
-        reward += Globals::Discount() * leaf_reward;
+        transform(leafReward.begin(), leafReward.end(), Reward.begin(), Reward.begin(), [](double x, double y) { return y + (x * Globals::Discount()); });
         prior->PopLast();
     }
 
-//    for(int i = 0; i < immediateReward.size(); i++) {
-//        qnode->Add(immediateReward[i], Weight[i]);
-//        vnode->Add(immediateReward[i], Weight[i]);
-//    }
-    qnode->Add(reward, weight);
-    vnode->Add(reward, weight);
+    for(int i = 0; i < particles.size(); i++) {
+        qnode->Add(Reward[i], particles[i]->weight);
+        vnode->Add(Reward[i], particles[i]->weight);
+    }
+//    qnode->Add(reward, weight);
+//    vnode->Add(reward, weight);
 
-    return reward;
+    return Reward;
 }
 
 // static
@@ -1022,9 +1011,9 @@ LEAFOMCP::LEAFOMCP(const DSPOMDP *model, POMCPPrior *prior, Belief *belief) :
       1. default Simulate function
       2. Check_default_policy_Simulate - builds a tree with depth one.
     */
-    double (*simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
+    vector<double> (*simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
                             POMCPPrior*, int, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Simulate;
-    double (*Check_default_policy_Simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
+    vector<double> (*Check_default_policy_Simulate_func)(vector<State*>&, VNode*, const DSPOMDP*,
                                                  POMCPPrior*, int, vector<double> (*leaf_heuristic)(vector<State*>&, int, const DSPOMDP*, POMCPPrior*, int)) = Check_default_policy_Simulate;
     simulate_ = Globals::config.check_default_policy ? Check_default_policy_Simulate_func : simulate_func;
 
