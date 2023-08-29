@@ -516,9 +516,6 @@ double POMCP::Simulate(vector<State *> &particles, VNode *vnode, const DSPOMDP *
     // Accumulate the weight before the normalization
     double weight = accumulate(Weight.begin(), Weight.end(), 0.0);
 
-    // Normalize the weights to 1
-    Weight = normalize(Weight);
-    nextWeight = normalize(nextWeight);
 
     // The particle filter reward - b(s) * R
     double reward = inner_product(immediateReward.begin(), immediateReward.end(), Weight.begin(), 0.0);
