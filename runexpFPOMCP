@@ -4,8 +4,10 @@ DIR="examples/cpp_models"   # Domain directory
 LOG=/dev/stdout             # Log file output
 REWIND=false
 NUMRUN=100
+TIGERNUMRUN=1000
 NOOBSTAG="-l tag_noOppObs_LEAFOMCP.log tag/noobstag"
-ROCKSAMPLE="-l rock_sample_LEAFOMCP_particleFilter_leader_rollout_sameWeight.log rock_sample/rock_sample"
+ROCKSAMPLE="-l rock_sample_LEAFOMCP_particleFilter_leader_rollout_sameWeight_noise_on_rock.log rock_sample/rock_sample"
+TIGER="-l tiger_LEAFOMCP_particleFilter_leader_rollout_sameWeight.log tiger/tiger"
 SIZE=7
 NUMBER=8
 
@@ -20,7 +22,7 @@ do
   do
     for k in 1 2 3 4 5 6 7 8 9 10 11
     do
-  #    bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward -2 --num_simulates 10000 --nparticles $k --leaf_heuristic VI
+#      bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
 #      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
       bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k
     done
@@ -67,15 +69,13 @@ done
 #    done
 #done
 
-
-
-
-
-
-
-
-
-
+for i in 10 20 90
+do
+  for k in 1 2 3 4 5 6 7 8 9 10 11
+  do
+    bash runexp $TIGER --runs $TIGERNUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --num_simulates 10000 --nparticles $k
+  done
+done
 
 
 

@@ -1004,8 +1004,10 @@ bool BaseRockSample::GetObservation(double rand_num,
 	const RockSampleState& rockstate, int rock) const {
 	double distance = Coord::EuclideanDistance(GetRobPos(&rockstate),
 		rock_pos_[rock]);
-	double efficiency = (1 + pow(2, -distance / half_efficiency_distance_))
-		* 0.5;
+	double efficiency = ((1 + pow(2, -distance / half_efficiency_distance_))
+		* 0.5 ) ;
+    if (efficiency == 1)
+        efficiency -= 0.1;
 
 	if (rand_num < efficiency)
 		return GetRock(&rockstate, rock) & E_GOOD;

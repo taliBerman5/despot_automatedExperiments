@@ -45,7 +45,7 @@ public:
 	Belief* InitialBelief(const State* start, std::string type = "DEFAULT") const;
 
 	inline double GetMaxReward() const {
-		return 10;
+		return 400; //TODO: changed from 10
 	}
 
 	inline ValuedAction GetBestAction() const {
@@ -63,6 +63,8 @@ public:
 	State* Copy(const State* particle) const;
 	void Free(State* particle) const;
 	int NumActiveParticles() const;
+
+    POMCPPrior *CreatePOMCPPrior(std::string name) const;
 };
 
 } // namespace despot

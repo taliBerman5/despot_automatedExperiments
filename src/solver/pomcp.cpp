@@ -482,10 +482,10 @@ vector<double> POMCP::Simulate(vector<State *> &particles, VNode *vnode, const D
                        vector<double> (*leaf_heuristic)(vector<State *> &, int, const DSPOMDP *, POMCPPrior *, int)) {
 
     assert(vnode != NULL);
-        vector<double> Reward(particles.size(), 0.0);  //initiation, holds the immediate reward + simulated reward  of the leader and followers
-        if (vnode->depth() >= search_depth) {
-            return Reward;
-        }
+    vector<double> Reward(particles.size(), 0.0);  //initiation, holds the immediate reward + simulated reward  of the leader and followers
+    if (vnode->depth() >= search_depth) {
+        return Reward;
+    }
 
     double explore_constant = prior->exploration_constant();
 

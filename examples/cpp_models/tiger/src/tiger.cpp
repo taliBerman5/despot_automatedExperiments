@@ -4,6 +4,7 @@
 #include <despot/core/builtin_policy.h>
 #include <despot/core/builtin_upper_bounds.h>
 #include <despot/core/particle_belief.h>
+#include <despot/solver/pomcp.h>
 
 using namespace std;
 
@@ -67,6 +68,36 @@ public:
 	}
 };
 
+
+/* ==============================================================================
+ * TagPOMCPPrior class
+ * ==============================================================================*/
+
+class TigerPOMCPPrior: public POMCPPrior {
+private:
+    const Tiger *tiger_;
+public:
+    TigerPOMCPPrior(const Tiger *model) :
+            POMCPPrior(model),
+            tiger_(model) {
+    }
+
+    void ComputePreference(const State &state) {
+        const TigerState& tigerState = static_cast<const TigerState&>(state);
+        legal_actions_.clear();
+        preferred_actions_.clear();
+
+        for (int a = 0; a < 3; a++) {
+            legal_actions_.push_back(a);
+        }
+        if (tigerState.tiger_position == Tiger::RIGHT)
+            preferred_actions_.push_back(Tiger::LEFT);
+        else
+            preferred_actions_.push_back(Tiger::RIGHT);
+    }
+};
+
+
 /* =============================================================================
  * Tiger class
  * =============================================================================*/
@@ -83,6 +114,7 @@ bool Tiger::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 		reward = state.tiger_position != action ? 10 : -100;
 		state.tiger_position = random_num <= 0.5 ? LEFT : RIGHT;
 		obs = 2; // can use arbitary observation
+        terminal = true;  //TODO: changed to end after opening a door
 	} else {
 		reward = -1;
 		if (random_num <= 1 - NOISE)
@@ -195,5 +227,18 @@ void Tiger::Free(State* particle) const {
 int Tiger::NumActiveParticles() const {
 	return memory_pool_.num_allocated();
 }
+
+
+POMCPPrior* Tiger::CreatePOMCPPrior(string name) const {
+        if (name == "UNIFORM") {
+            return new UniformPOMCPPrior(this);
+        } else if (name == "DEFAULT" || name == "SMART") {
+            return new TigerPOMCPPrior(this);
+        } else {
+            cerr << "Unsupported POMCP prior: " << name << endl;
+            exit(1);
+            return NULL;
+        }
+    }
 
 } // namespace despot
