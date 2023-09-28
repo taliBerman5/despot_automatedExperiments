@@ -15,19 +15,20 @@ NUMBER=8
 set -e
 make -C $DIR/tag
 make -C $DIR/rock_sample
+make -C $DIR/tiger
 
-for i in 10 20 90
-do
-  for r in -2 -5 -10
-  do
-    for k in 1 2 3 4 5 6 7 8 9 10 11
-    do
-#      bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
-#      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
-      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k
-    done
-  done
-done
+#for i in 10 20 90
+#do
+#  for r in -2 -5 -10
+#  do
+#    for k in 1 2 3 4 5 6 7 8 9 10 11
+#    do
+##      bash runexp $NOOBSTAG --runs $NUMRUN --solver LEAFOMCP --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
+##      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k --leaf_heuristic VI
+#      bash runexp $ROCKSAMPLE --runs $NUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --unsuccessful_reward $r --num_simulates 10000 --nparticles $k
+#    done
+#  done
+#done
 
 #for i in 10  20 90
 #do
@@ -73,7 +74,7 @@ for i in 10 20 90
 do
   for k in 1 2 3 4 5 6 7 8 9 10 11
   do
-    bash runexp $TIGER --runs $TIGERNUMRUN --solver LEAFOMCP --size $SIZE --number $NUMBER --depth $i --num_simulates 10000 --nparticles $k
+    bash runexp $TIGER --runs $TIGERNUMRUN --solver LEAFOMCP --depth $i --num_simulates 10000 --nparticles $k
   done
 done
 
